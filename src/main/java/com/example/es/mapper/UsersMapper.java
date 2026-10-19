@@ -40,6 +40,7 @@ public interface UsersMapper extends BaseMapper<Users> {
 
         return selectOne(wrapper);
     }
+
 }
 
 

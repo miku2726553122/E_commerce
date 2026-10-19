@@ -17,4 +17,6 @@ public interface UsersService extends IService<Users> {
     Response selectById(Long id);
 
     Response addMerchant(AddMechantsReqVO addMechantsReqVO);
+
+    Response enableOrDisableUser(Long id, Integer status);
 }

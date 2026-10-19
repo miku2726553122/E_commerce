@@ -1,11 +1,14 @@
 package com.example.es.utils;
 
+import com.example.es.enums.ResponseCodeEnum;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 import java.io.Serializable;
 
 
 @Data
+@JsonPropertyOrder({"success", "message", "data"})
 public class Response<T> implements Serializable {
     // 是否成功
     private boolean success;
@@ -39,6 +42,13 @@ public class Response<T> implements Serializable {
     public static <T> Response<T> fail(String message) {
         Response<T> response = new Response<>();
         response.setMessage(message);
+        response.setSuccess(false);
+        return response;
+    }
+
+    public static <T> Response<T> fail(ResponseCodeEnum responseCode) {
+        Response<T> response = new Response<>();
+        response.setMessage(responseCode.getErrorMessage());
         response.setSuccess(false);
         return response;
     }

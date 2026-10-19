@@ -3,6 +3,7 @@ package com.example.es.service.impl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.example.es.entity.Users;
+import com.example.es.enums.ResponseCodeEnum;
 import com.example.es.service.UsersService;
 import com.example.es.mapper.UsersMapper;
 import com.example.es.utils.PasswordUtil;
@@ -26,12 +27,23 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
     @Autowired
     private UsersMapper usersMapper;
 
+
+    /**
+     * 查询所有角色
+     * @param reqVO
+     * @return
+     */
     @Override
     public Response selectAllRole(FindAllRoleReqVO reqVO) {
         Page<Users> page = usersMapper.selectPageList(reqVO.getPageNum(), reqVO.getPageSize(), reqVO.getRole(), reqVO.getStatus(), reqVO.getKeyword());
         return Response.success(page);
     }
 
+    /**
+     * 根据id获取用户信息
+     * @param id
+     * @return
+     */
     @Override
     public Response selectById(Long id) {
         Users users = usersMapper.selectById(id);
@@ -45,6 +57,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         return Response.success(findByIdRspVO);
     }
 
+    /**
+     * 添加商户
+     * @param addMechantsReqVO
+     * @return
+     */
     @Override
     public Response addMerchant(AddMechantsReqVO addMechantsReqVO) {
         // 加密密码
@@ -67,6 +84,29 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                 .build();
 
         return Response.success(addMerchantsRspVO);
+    }
+
+    /**
+     * 启用禁用用户
+     * @param id
+     * @param status
+     * @return
+     */
+    @Override
+    public Response enableOrDisableUser(Long id, Integer status) {
+
+        Users findUser = usersMapper.selectById(id);
+
+        if(findUser.getStatus().equals(status) || !(status.equals(0)||status.equals(1))){
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        }
+
+        Users users = Users.builder()
+                .id(id)
+                .status(status)
+                .build();
+        this.updateById(users);
+        return Response.success(null);
     }
 }
 

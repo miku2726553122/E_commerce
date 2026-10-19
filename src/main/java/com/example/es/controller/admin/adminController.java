@@ -7,9 +7,8 @@ import com.example.es.vo.admin.FindAllRoleReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "管理员接口", description = "管理员相关接口")
 @RestController
@@ -33,7 +32,7 @@ public class adminController {
      */
     @Operation(summary = "查询所有角色", description = "查询所有角色")
     @GetMapping("/users")
-    public Response selectAllRole(FindAllRoleReqVO reqVO) {
+    public Response selectAllRole(@RequestBody FindAllRoleReqVO reqVO) {
        return  usersService.selectAllRole(reqVO);
     }
 
@@ -49,9 +48,23 @@ public class adminController {
     }
 
 
+    /**
+     * 添加商户
+     * @param addMechantsReqVO
+     * @return
+     */
     @GetMapping("/merchants")
     @Operation(summary = "添加商户", description = "添加商户")
-    public Response addmerchants(AddMechantsReqVO addMechantsReqVO) {
+    public Response addmerchants(@RequestBody @Validated AddMechantsReqVO addMechantsReqVO) {
         return usersService.addMerchant(addMechantsReqVO);
     }
+
+
+    @PutMapping("/users/{id}/status")
+    @Operation(summary = "启用或禁用用户", description = "启用或禁用用户")
+    public Response EDUser(@PathVariable Long id, @RequestParam Integer status) {
+        return usersService.enableOrDisableUser(id, status);
+    }
+
+
 }
