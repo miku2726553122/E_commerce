@@ -1,6 +1,6 @@
 package com.example.es.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.example.es.entity.Categories;
 import com.example.es.service.CategoriesService;
 import com.example.es.mapper.CategoriesMapper;

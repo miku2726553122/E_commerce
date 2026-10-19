@@ -1,7 +1,7 @@
 package com.example.es.service;
 
 import com.example.es.entity.Users;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 
 /**
 * @author 86159
