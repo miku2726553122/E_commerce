@@ -12,6 +12,8 @@ import com.example.es.vo.admin.AddMechantsReqVO;
 import com.example.es.vo.admin.AddMerchantsRspVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import com.example.es.vo.admin.FindByIdRspVO;
+import org.apache.catalina.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 * @description 针对表【users(用户表)】的数据库操作Service实现
 * @createDate 2026-10-19 10:21:26
 */
+@Slf4j
 @Service
 public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
     implements UsersService{
@@ -69,9 +72,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
         Users users = Users.builder()
                 .username(addMechantsReqVO.getUsername())
-                .password_hash(encodedPassword)
+                .passwordHash(encodedPassword)
                 .nickname(addMechantsReqVO.getNickname())
-                .shop_name(addMechantsReqVO.getShopName())
+                .shopName(addMechantsReqVO.getShopName())
                 .role("MERCHANT")
                 .status(1)
                 .build();
@@ -80,7 +83,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                 .id(users.getId())
                 .username(users.getUsername())
                 .nickname(users.getNickname())
-                .shopName(users.getShop_name() == null ? null : users.getShop_name())
+                .shopName(users.getShopName() == null ? null : users.getShopName())
                 .build();
 
         return Response.success(addMerchantsRspVO);
@@ -106,6 +109,39 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                 .status(status)
                 .build();
         this.updateById(users);
+        return Response.success(null);
+    }
+
+    /**
+     * 重置密码
+     * @param id
+     * @param newPassword
+     * @return
+     */
+    @Override
+    public Response resetPassword(Long id, String newPassword) {
+        Users user = usersMapper.selectById(id);
+
+        if (user == null){
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+
+        if (newPassword == null || newPassword.isEmpty())
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+
+        if (newPassword.length() < 6 || newPassword.length() > 20)
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+
+        log.info("old password: {}", user.getPasswordHash());
+
+        if (user.getPasswordHash() != null
+                && PasswordUtil.matches(newPassword, user.getPasswordHash()))
+            return Response.fail(ResponseCodeEnum.PASSWORD_SAME);
+
+        String encodedPassword = PasswordUtil.encode(newPassword);
+        user.setPasswordHash(encodedPassword);
+        usersMapper.updateById(user);
+
         return Response.success(null);
     }
 }

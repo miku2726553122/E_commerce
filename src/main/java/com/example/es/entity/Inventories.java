@@ -30,27 +30,32 @@ public class Inventories {
     /**
      * SKU ID
      */
-    private Long sku_id;
+    @TableField("sku_id")
+    private Long skuId;
 
     /**
      * 实际库存数量
      */
-    private Integer stock_quantity;
+    @TableField("stock_quantity")
+    private Integer stockQuantity;
 
     /**
      * 锁定库存数量
      */
-    private Integer locked_quantity;
+    @TableField("locked_quantity")
+    private Integer lockedQuantity;
 
     /**
      * 库存预警数量
      */
-    private Integer warning_quantity;
+    @TableField("warning_quantity")
+    private Integer warningQuantity;
 
     /**
-     * 
+     *
      */
-    private LocalDateTime updated_at;
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
 
     @Override
     public boolean equals(Object that) {
@@ -65,11 +70,11 @@ public class Inventories {
         }
         Inventories other = (Inventories) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getSku_id() == null ? other.getSku_id() == null : this.getSku_id().equals(other.getSku_id()))
-            && (this.getStock_quantity() == null ? other.getStock_quantity() == null : this.getStock_quantity().equals(other.getStock_quantity()))
-            && (this.getLocked_quantity() == null ? other.getLocked_quantity() == null : this.getLocked_quantity().equals(other.getLocked_quantity()))
-            && (this.getWarning_quantity() == null ? other.getWarning_quantity() == null : this.getWarning_quantity().equals(other.getWarning_quantity()))
-            && (this.getUpdated_at() == null ? other.getUpdated_at() == null : this.getUpdated_at().equals(other.getUpdated_at()));
+            && (this.getSkuId() == null ? other.getSkuId() == null : this.getSkuId().equals(other.getSkuId()))
+            && (this.getStockQuantity() == null ? other.getStockQuantity() == null : this.getStockQuantity().equals(other.getStockQuantity()))
+            && (this.getLockedQuantity() == null ? other.getLockedQuantity() == null : this.getLockedQuantity().equals(other.getLockedQuantity()))
+            && (this.getWarningQuantity() == null ? other.getWarningQuantity() == null : this.getWarningQuantity().equals(other.getWarningQuantity()))
+            && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()));
     }
 
     @Override
@@ -77,11 +82,11 @@ public class Inventories {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getSku_id() == null) ? 0 : getSku_id().hashCode());
-        result = prime * result + ((getStock_quantity() == null) ? 0 : getStock_quantity().hashCode());
-        result = prime * result + ((getLocked_quantity() == null) ? 0 : getLocked_quantity().hashCode());
-        result = prime * result + ((getWarning_quantity() == null) ? 0 : getWarning_quantity().hashCode());
-        result = prime * result + ((getUpdated_at() == null) ? 0 : getUpdated_at().hashCode());
+        result = prime * result + ((getSkuId() == null) ? 0 : getSkuId().hashCode());
+        result = prime * result + ((getStockQuantity() == null) ? 0 : getStockQuantity().hashCode());
+        result = prime * result + ((getLockedQuantity() == null) ? 0 : getLockedQuantity().hashCode());
+        result = prime * result + ((getWarningQuantity() == null) ? 0 : getWarningQuantity().hashCode());
+        result = prime * result + ((getUpdatedAt() == null) ? 0 : getUpdatedAt().hashCode());
         return result;
     }
 
@@ -92,11 +97,11 @@ public class Inventories {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", sku_id=").append(sku_id);
-        sb.append(", stock_quantity=").append(stock_quantity);
-        sb.append(", locked_quantity=").append(locked_quantity);
-        sb.append(", warning_quantity=").append(warning_quantity);
-        sb.append(", updated_at=").append(updated_at);
+        sb.append(", skuId=").append(skuId);
+        sb.append(", stockQuantity=").append(stockQuantity);
+        sb.append(", lockedQuantity=").append(lockedQuantity);
+        sb.append(", warningQuantity=").append(warningQuantity);
+        sb.append(", updatedAt=").append(updatedAt);
         sb.append("]");
         return sb.toString();
     }

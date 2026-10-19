@@ -7,18 +7,18 @@
     <resultMap id="BaseResultMap" type="com.example.es.entity.Users">
             <id property="id" column="id" />
             <result property="username" column="username" />
-            <result property="password_hash" column="password_hash" />
+            <result property="passwordHash" column="password_hash" />
             <result property="nickname" column="nickname" />
-            <result property="real_name" column="real_name" />
+            <result property="realName" column="real_name" />
             <result property="phone" column="phone" />
             <result property="email" column="email" />
             <result property="avatar" column="avatar" />
-            <result property="shop_name" column="shop_name" />
-            <result property="shop_logo" column="shop_logo" />
+            <result property="shopName" column="shop_name" />
+            <result property="shopLogo" column="shop_logo" />
             <result property="role" column="role" />
             <result property="status" column="status" />
-            <result property="created_at" column="created_at" />
-            <result property="updated_at" column="updated_at" />
+            <result property="createdAt" column="created_at" />
+            <result property="updatedAt" column="updated_at" />
     </resultMap>
 
     <sql id="Base_Column_List">

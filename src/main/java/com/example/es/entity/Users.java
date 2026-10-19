@@ -36,7 +36,8 @@ public class Users extends BasePageQuery {
     /**
      * 密码哈希
      */
-    private String password_hash;
+    @TableField("password_hash")
+    private String passwordHash;
 
     /**
      * 昵称
@@ -46,7 +47,8 @@ public class Users extends BasePageQuery {
     /**
      * 真实姓名
      */
-    private String real_name;
+    @TableField("real_name")
+    private String realName;
 
     /**
      * 手机号
@@ -66,12 +68,14 @@ public class Users extends BasePageQuery {
     /**
      * 商家店铺名称
      */
-    private String shop_name;
+    @TableField("shop_name")
+    private String shopName;
 
     /**
      * 商家店铺Logo
      */
-    private String shop_logo;
+    @TableField("shop_logo")
+    private String shopLogo;
 
     /**
      * 角色：ADMIN管理员、USER普通用户、MERCHANT商家
@@ -84,14 +88,16 @@ public class Users extends BasePageQuery {
     private Integer status;
 
     /**
-     * 
+     *
      */
-    private LocalDateTime created_at;
+    @TableField("created_at")
+    private LocalDateTime createdAt;
 
     /**
-     * 
+     *
      */
-    private LocalDateTime updated_at;
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
 
     @Override
     public boolean equals(Object that) {
@@ -107,18 +113,18 @@ public class Users extends BasePageQuery {
         Users other = (Users) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
             && (this.getUsername() == null ? other.getUsername() == null : this.getUsername().equals(other.getUsername()))
-            && (this.getPassword_hash() == null ? other.getPassword_hash() == null : this.getPassword_hash().equals(other.getPassword_hash()))
+            && (this.getPasswordHash() == null ? other.getPasswordHash() == null : this.getPasswordHash().equals(other.getPasswordHash()))
             && (this.getNickname() == null ? other.getNickname() == null : this.getNickname().equals(other.getNickname()))
-            && (this.getReal_name() == null ? other.getReal_name() == null : this.getReal_name().equals(other.getReal_name()))
+            && (this.getRealName() == null ? other.getRealName() == null : this.getRealName().equals(other.getRealName()))
             && (this.getPhone() == null ? other.getPhone() == null : this.getPhone().equals(other.getPhone()))
             && (this.getEmail() == null ? other.getEmail() == null : this.getEmail().equals(other.getEmail()))
             && (this.getAvatar() == null ? other.getAvatar() == null : this.getAvatar().equals(other.getAvatar()))
-            && (this.getShop_name() == null ? other.getShop_name() == null : this.getShop_name().equals(other.getShop_name()))
-            && (this.getShop_logo() == null ? other.getShop_logo() == null : this.getShop_logo().equals(other.getShop_logo()))
+            && (this.getShopName() == null ? other.getShopName() == null : this.getShopName().equals(other.getShopName()))
+            && (this.getShopLogo() == null ? other.getShopLogo() == null : this.getShopLogo().equals(other.getShopLogo()))
             && (this.getRole() == null ? other.getRole() == null : this.getRole().equals(other.getRole()))
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
-            && (this.getCreated_at() == null ? other.getCreated_at() == null : this.getCreated_at().equals(other.getCreated_at()))
-            && (this.getUpdated_at() == null ? other.getUpdated_at() == null : this.getUpdated_at().equals(other.getUpdated_at()));
+            && (this.getCreatedAt() == null ? other.getCreatedAt() == null : this.getCreatedAt().equals(other.getCreatedAt()))
+            && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()));
     }
 
     @Override
@@ -127,18 +133,18 @@ public class Users extends BasePageQuery {
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
         result = prime * result + ((getUsername() == null) ? 0 : getUsername().hashCode());
-        result = prime * result + ((getPassword_hash() == null) ? 0 : getPassword_hash().hashCode());
+        result = prime * result + ((getPasswordHash() == null) ? 0 : getPasswordHash().hashCode());
         result = prime * result + ((getNickname() == null) ? 0 : getNickname().hashCode());
-        result = prime * result + ((getReal_name() == null) ? 0 : getReal_name().hashCode());
+        result = prime * result + ((getRealName() == null) ? 0 : getRealName().hashCode());
         result = prime * result + ((getPhone() == null) ? 0 : getPhone().hashCode());
         result = prime * result + ((getEmail() == null) ? 0 : getEmail().hashCode());
         result = prime * result + ((getAvatar() == null) ? 0 : getAvatar().hashCode());
-        result = prime * result + ((getShop_name() == null) ? 0 : getShop_name().hashCode());
-        result = prime * result + ((getShop_logo() == null) ? 0 : getShop_logo().hashCode());
+        result = prime * result + ((getShopName() == null) ? 0 : getShopName().hashCode());
+        result = prime * result + ((getShopLogo() == null) ? 0 : getShopLogo().hashCode());
         result = prime * result + ((getRole() == null) ? 0 : getRole().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
-        result = prime * result + ((getCreated_at() == null) ? 0 : getCreated_at().hashCode());
-        result = prime * result + ((getUpdated_at() == null) ? 0 : getUpdated_at().hashCode());
+        result = prime * result + ((getCreatedAt() == null) ? 0 : getCreatedAt().hashCode());
+        result = prime * result + ((getUpdatedAt() == null) ? 0 : getUpdatedAt().hashCode());
         return result;
     }
 
@@ -150,18 +156,18 @@ public class Users extends BasePageQuery {
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
         sb.append(", username=").append(username);
-        sb.append(", password_hash=").append(password_hash);
+        sb.append(", passwordHash=").append(passwordHash);
         sb.append(", nickname=").append(nickname);
-        sb.append(", real_name=").append(real_name);
+        sb.append(", realName=").append(realName);
         sb.append(", phone=").append(phone);
         sb.append(", email=").append(email);
         sb.append(", avatar=").append(avatar);
-        sb.append(", shop_name=").append(shop_name);
-        sb.append(", shop_logo=").append(shop_logo);
+        sb.append(", shopName=").append(shopName);
+        sb.append(", shopLogo=").append(shopLogo);
         sb.append(", role=").append(role);
         sb.append(", status=").append(status);
-        sb.append(", created_at=").append(created_at);
-        sb.append(", updated_at=").append(updated_at);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", updatedAt=").append(updatedAt);
         sb.append("]");
         return sb.toString();
     }

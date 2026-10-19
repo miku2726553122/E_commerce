@@ -6,13 +6,13 @@
 
     <resultMap id="BaseResultMap" type="com.example.es.entity.CartItems">
             <id property="id" column="id" />
-            <result property="cart_id" column="cart_id" />
-            <result property="product_id" column="product_id" />
-            <result property="sku_id" column="sku_id" />
+            <result property="cartId" column="cart_id" />
+            <result property="productId" column="product_id" />
+            <result property="skuId" column="sku_id" />
             <result property="quantity" column="quantity" />
             <result property="selected" column="selected" />
-            <result property="created_at" column="created_at" />
-            <result property="updated_at" column="updated_at" />
+            <result property="createdAt" column="created_at" />
+            <result property="updatedAt" column="updated_at" />
     </resultMap>
 
     <sql id="Base_Column_List">

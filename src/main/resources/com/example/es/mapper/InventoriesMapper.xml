@@ -6,11 +6,11 @@
 
     <resultMap id="BaseResultMap" type="com.example.es.entity.Inventories">
             <id property="id" column="id" />
-            <result property="sku_id" column="sku_id" />
-            <result property="stock_quantity" column="stock_quantity" />
-            <result property="locked_quantity" column="locked_quantity" />
-            <result property="warning_quantity" column="warning_quantity" />
-            <result property="updated_at" column="updated_at" />
+            <result property="skuId" column="sku_id" />
+            <result property="stockQuantity" column="stock_quantity" />
+            <result property="lockedQuantity" column="locked_quantity" />
+            <result property="warningQuantity" column="warning_quantity" />
+            <result property="updatedAt" column="updated_at" />
     </resultMap>
 
     <sql id="Base_Column_List">

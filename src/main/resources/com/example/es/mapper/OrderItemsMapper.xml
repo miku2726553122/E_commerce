@@ -6,17 +6,17 @@
 
     <resultMap id="BaseResultMap" type="com.example.es.entity.OrderItems">
             <id property="id" column="id" />
-            <result property="order_id" column="order_id" />
-            <result property="product_id" column="product_id" />
-            <result property="sku_id" column="sku_id" />
-            <result property="product_name" column="product_name" />
-            <result property="sku_name" column="sku_name" />
-            <result property="sku_specification" column="sku_specification" />
-            <result property="product_image" column="product_image" />
-            <result property="unit_price" column="unit_price" />
+            <result property="orderId" column="order_id" />
+            <result property="productId" column="product_id" />
+            <result property="skuId" column="sku_id" />
+            <result property="productName" column="product_name" />
+            <result property="skuName" column="sku_name" />
+            <result property="skuSpecification" column="sku_specification" />
+            <result property="productImage" column="product_image" />
+            <result property="unitPrice" column="unit_price" />
             <result property="quantity" column="quantity" />
-            <result property="total_amount" column="total_amount" />
-            <result property="created_at" column="created_at" />
+            <result property="totalAmount" column="total_amount" />
+            <result property="createdAt" column="created_at" />
     </resultMap>
 
     <sql id="Base_Column_List">

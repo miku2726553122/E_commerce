@@ -30,22 +30,26 @@ public class Categories {
     /**
      * 父级分类ID，0表示一级分类
      */
-    private Long parent_id;
+    @TableField("parent_id")
+    private Long parentId;
 
     /**
      * 分类名称
      */
-    private String category_name;
+    @TableField("category_name")
+    private String categoryName;
 
     /**
      * 分类图片
      */
-    private String category_image;
+    @TableField("category_image")
+    private String categoryImage;
 
     /**
      * 排序值
      */
-    private Integer sort_order;
+    @TableField("sort_order")
+    private Integer sortOrder;
 
     /**
      * 状态：0禁用、1启用
@@ -53,14 +57,16 @@ public class Categories {
     private Integer status;
 
     /**
-     * 
+     *
      */
-    private LocalDateTime created_at;
+    @TableField("created_at")
+    private LocalDateTime createdAt;
 
     /**
-     * 
+     *
      */
-    private LocalDateTime updated_at;
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
 
     @Override
     public boolean equals(Object that) {
@@ -75,13 +81,13 @@ public class Categories {
         }
         Categories other = (Categories) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getParent_id() == null ? other.getParent_id() == null : this.getParent_id().equals(other.getParent_id()))
-            && (this.getCategory_name() == null ? other.getCategory_name() == null : this.getCategory_name().equals(other.getCategory_name()))
-            && (this.getCategory_image() == null ? other.getCategory_image() == null : this.getCategory_image().equals(other.getCategory_image()))
-            && (this.getSort_order() == null ? other.getSort_order() == null : this.getSort_order().equals(other.getSort_order()))
+            && (this.getParentId() == null ? other.getParentId() == null : this.getParentId().equals(other.getParentId()))
+            && (this.getCategoryName() == null ? other.getCategoryName() == null : this.getCategoryName().equals(other.getCategoryName()))
+            && (this.getCategoryImage() == null ? other.getCategoryImage() == null : this.getCategoryImage().equals(other.getCategoryImage()))
+            && (this.getSortOrder() == null ? other.getSortOrder() == null : this.getSortOrder().equals(other.getSortOrder()))
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
-            && (this.getCreated_at() == null ? other.getCreated_at() == null : this.getCreated_at().equals(other.getCreated_at()))
-            && (this.getUpdated_at() == null ? other.getUpdated_at() == null : this.getUpdated_at().equals(other.getUpdated_at()));
+            && (this.getCreatedAt() == null ? other.getCreatedAt() == null : this.getCreatedAt().equals(other.getCreatedAt()))
+            && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()));
     }
 
     @Override
@@ -89,13 +95,13 @@ public class Categories {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getParent_id() == null) ? 0 : getParent_id().hashCode());
-        result = prime * result + ((getCategory_name() == null) ? 0 : getCategory_name().hashCode());
-        result = prime * result + ((getCategory_image() == null) ? 0 : getCategory_image().hashCode());
-        result = prime * result + ((getSort_order() == null) ? 0 : getSort_order().hashCode());
+        result = prime * result + ((getParentId() == null) ? 0 : getParentId().hashCode());
+        result = prime * result + ((getCategoryName() == null) ? 0 : getCategoryName().hashCode());
+        result = prime * result + ((getCategoryImage() == null) ? 0 : getCategoryImage().hashCode());
+        result = prime * result + ((getSortOrder() == null) ? 0 : getSortOrder().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
-        result = prime * result + ((getCreated_at() == null) ? 0 : getCreated_at().hashCode());
-        result = prime * result + ((getUpdated_at() == null) ? 0 : getUpdated_at().hashCode());
+        result = prime * result + ((getCreatedAt() == null) ? 0 : getCreatedAt().hashCode());
+        result = prime * result + ((getUpdatedAt() == null) ? 0 : getUpdatedAt().hashCode());
         return result;
     }
 
@@ -106,13 +112,13 @@ public class Categories {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", parent_id=").append(parent_id);
-        sb.append(", category_name=").append(category_name);
-        sb.append(", category_image=").append(category_image);
-        sb.append(", sort_order=").append(sort_order);
+        sb.append(", parentId=").append(parentId);
+        sb.append(", categoryName=").append(categoryName);
+        sb.append(", categoryImage=").append(categoryImage);
+        sb.append(", sortOrder=").append(sortOrder);
         sb.append(", status=").append(status);
-        sb.append(", created_at=").append(created_at);
-        sb.append(", updated_at=").append(updated_at);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", updatedAt=").append(updatedAt);
         sb.append("]");
         return sb.toString();
     }

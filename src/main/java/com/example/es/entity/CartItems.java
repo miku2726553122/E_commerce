@@ -30,17 +30,20 @@ public class CartItems {
     /**
      * 购物车ID
      */
-    private Long cart_id;
+    @TableField("cart_id")
+    private Long cartId;
 
     /**
      * 商品ID
      */
-    private Long product_id;
+    @TableField("product_id")
+    private Long productId;
 
     /**
      * SKU ID
      */
-    private Long sku_id;
+    @TableField("sku_id")
+    private Long skuId;
 
     /**
      * 购买数量
@@ -53,14 +56,16 @@ public class CartItems {
     private Integer selected;
 
     /**
-     * 
+     *
      */
-    private LocalDateTime created_at;
+    @TableField("created_at")
+    private LocalDateTime createdAt;
 
     /**
-     * 
+     *
      */
-    private LocalDateTime updated_at;
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
 
     @Override
     public boolean equals(Object that) {
@@ -75,13 +80,13 @@ public class CartItems {
         }
         CartItems other = (CartItems) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getCart_id() == null ? other.getCart_id() == null : this.getCart_id().equals(other.getCart_id()))
-            && (this.getProduct_id() == null ? other.getProduct_id() == null : this.getProduct_id().equals(other.getProduct_id()))
-            && (this.getSku_id() == null ? other.getSku_id() == null : this.getSku_id().equals(other.getSku_id()))
+            && (this.getCartId() == null ? other.getCartId() == null : this.getCartId().equals(other.getCartId()))
+            && (this.getProductId() == null ? other.getProductId() == null : this.getProductId().equals(other.getProductId()))
+            && (this.getSkuId() == null ? other.getSkuId() == null : this.getSkuId().equals(other.getSkuId()))
             && (this.getQuantity() == null ? other.getQuantity() == null : this.getQuantity().equals(other.getQuantity()))
             && (this.getSelected() == null ? other.getSelected() == null : this.getSelected().equals(other.getSelected()))
-            && (this.getCreated_at() == null ? other.getCreated_at() == null : this.getCreated_at().equals(other.getCreated_at()))
-            && (this.getUpdated_at() == null ? other.getUpdated_at() == null : this.getUpdated_at().equals(other.getUpdated_at()));
+            && (this.getCreatedAt() == null ? other.getCreatedAt() == null : this.getCreatedAt().equals(other.getCreatedAt()))
+            && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()));
     }
 
     @Override
@@ -89,13 +94,13 @@ public class CartItems {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getCart_id() == null) ? 0 : getCart_id().hashCode());
-        result = prime * result + ((getProduct_id() == null) ? 0 : getProduct_id().hashCode());
-        result = prime * result + ((getSku_id() == null) ? 0 : getSku_id().hashCode());
+        result = prime * result + ((getCartId() == null) ? 0 : getCartId().hashCode());
+        result = prime * result + ((getProductId() == null) ? 0 : getProductId().hashCode());
+        result = prime * result + ((getSkuId() == null) ? 0 : getSkuId().hashCode());
         result = prime * result + ((getQuantity() == null) ? 0 : getQuantity().hashCode());
         result = prime * result + ((getSelected() == null) ? 0 : getSelected().hashCode());
-        result = prime * result + ((getCreated_at() == null) ? 0 : getCreated_at().hashCode());
-        result = prime * result + ((getUpdated_at() == null) ? 0 : getUpdated_at().hashCode());
+        result = prime * result + ((getCreatedAt() == null) ? 0 : getCreatedAt().hashCode());
+        result = prime * result + ((getUpdatedAt() == null) ? 0 : getUpdatedAt().hashCode());
         return result;
     }
 
@@ -106,13 +111,13 @@ public class CartItems {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", cart_id=").append(cart_id);
-        sb.append(", product_id=").append(product_id);
-        sb.append(", sku_id=").append(sku_id);
+        sb.append(", cartId=").append(cartId);
+        sb.append(", productId=").append(productId);
+        sb.append(", skuId=").append(skuId);
         sb.append(", quantity=").append(quantity);
         sb.append(", selected=").append(selected);
-        sb.append(", created_at=").append(created_at);
-        sb.append(", updated_at=").append(updated_at);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", updatedAt=").append(updatedAt);
         sb.append("]");
         return sb.toString();
     }

@@ -31,97 +31,116 @@ public class Orders {
     /**
      * 订单编号
      */
-    private String order_no;
+    @TableField("order_no")
+    private String orderNo;
 
     /**
      * 买家用户ID
      */
-    private Long user_id;
+    @TableField("user_id")
+    private Long userId;
 
     /**
      * 收货人姓名
      */
-    private String receiver_name;
+    @TableField("receiver_name")
+    private String receiverName;
 
     /**
      * 收货电话
      */
-    private String receiver_phone;
+    @TableField("receiver_phone")
+    private String receiverPhone;
 
     /**
      * 收货地址
      */
-    private String receiver_address;
+    @TableField("receiver_address")
+    private String receiverAddress;
 
     /**
      * 商品总金额
      */
-    private BigDecimal total_amount;
+    @TableField("total_amount")
+    private BigDecimal totalAmount;
 
     /**
      * 运费
      */
-    private BigDecimal freight_amount;
+    @TableField("freight_amount")
+    private BigDecimal freightAmount;
 
     /**
      * 应付金额
      */
-    private BigDecimal payable_amount;
+    @TableField("payable_amount")
+    private BigDecimal payableAmount;
 
     /**
      * 订单状态：待付款、待发货、已发货、已完成、已取消
      */
-    private String order_status;
+    @TableField("order_status")
+    private String orderStatus;
 
     /**
      * 支付状态：未支付、已支付
      */
-    private String payment_status;
+    @TableField("payment_status")
+    private String paymentStatus;
 
     /**
      * 配送状态：待发货、已发货、已签收
      */
-    private String delivery_status;
+    @TableField("delivery_status")
+    private String deliveryStatus;
 
     /**
      * 买家备注
      */
-    private String user_remark;
+    @TableField("user_remark")
+    private String userRemark;
 
     /**
      * 取消原因
      */
-    private String cancel_reason;
+    @TableField("cancel_reason")
+    private String cancelReason;
 
     /**
      * 支付时间
      */
-    private LocalDateTime paid_at;
+    @TableField("paid_at")
+    private LocalDateTime paidAt;
 
     /**
      * 发货时间
      */
-    private LocalDateTime shipped_at;
+    @TableField("shipped_at")
+    private LocalDateTime shippedAt;
 
     /**
      * 完成时间
      */
-    private LocalDateTime completed_at;
+    @TableField("completed_at")
+    private LocalDateTime completedAt;
 
     /**
      * 取消时间
      */
-    private LocalDateTime cancelled_at;
+    @TableField("cancelled_at")
+    private LocalDateTime cancelledAt;
 
     /**
      * 
      */
-    private LocalDateTime created_at;
+    @TableField("created_at")
+    private LocalDateTime createdAt;
 
     /**
      * 
      */
-    private LocalDateTime updated_at;
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
 
     @Override
     public boolean equals(Object that) {
@@ -136,25 +155,25 @@ public class Orders {
         }
         Orders other = (Orders) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getOrder_no() == null ? other.getOrder_no() == null : this.getOrder_no().equals(other.getOrder_no()))
-            && (this.getUser_id() == null ? other.getUser_id() == null : this.getUser_id().equals(other.getUser_id()))
-            && (this.getReceiver_name() == null ? other.getReceiver_name() == null : this.getReceiver_name().equals(other.getReceiver_name()))
-            && (this.getReceiver_phone() == null ? other.getReceiver_phone() == null : this.getReceiver_phone().equals(other.getReceiver_phone()))
-            && (this.getReceiver_address() == null ? other.getReceiver_address() == null : this.getReceiver_address().equals(other.getReceiver_address()))
-            && (this.getTotal_amount() == null ? other.getTotal_amount() == null : this.getTotal_amount().equals(other.getTotal_amount()))
-            && (this.getFreight_amount() == null ? other.getFreight_amount() == null : this.getFreight_amount().equals(other.getFreight_amount()))
-            && (this.getPayable_amount() == null ? other.getPayable_amount() == null : this.getPayable_amount().equals(other.getPayable_amount()))
-            && (this.getOrder_status() == null ? other.getOrder_status() == null : this.getOrder_status().equals(other.getOrder_status()))
-            && (this.getPayment_status() == null ? other.getPayment_status() == null : this.getPayment_status().equals(other.getPayment_status()))
-            && (this.getDelivery_status() == null ? other.getDelivery_status() == null : this.getDelivery_status().equals(other.getDelivery_status()))
-            && (this.getUser_remark() == null ? other.getUser_remark() == null : this.getUser_remark().equals(other.getUser_remark()))
-            && (this.getCancel_reason() == null ? other.getCancel_reason() == null : this.getCancel_reason().equals(other.getCancel_reason()))
-            && (this.getPaid_at() == null ? other.getPaid_at() == null : this.getPaid_at().equals(other.getPaid_at()))
-            && (this.getShipped_at() == null ? other.getShipped_at() == null : this.getShipped_at().equals(other.getShipped_at()))
-            && (this.getCompleted_at() == null ? other.getCompleted_at() == null : this.getCompleted_at().equals(other.getCompleted_at()))
-            && (this.getCancelled_at() == null ? other.getCancelled_at() == null : this.getCancelled_at().equals(other.getCancelled_at()))
-            && (this.getCreated_at() == null ? other.getCreated_at() == null : this.getCreated_at().equals(other.getCreated_at()))
-            && (this.getUpdated_at() == null ? other.getUpdated_at() == null : this.getUpdated_at().equals(other.getUpdated_at()));
+            && (this.getOrderNo() == null ? other.getOrderNo() == null : this.getOrderNo().equals(other.getOrderNo()))
+            && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
+            && (this.getReceiverName() == null ? other.getReceiverName() == null : this.getReceiverName().equals(other.getReceiverName()))
+            && (this.getReceiverPhone() == null ? other.getReceiverPhone() == null : this.getReceiverPhone().equals(other.getReceiverPhone()))
+            && (this.getReceiverAddress() == null ? other.getReceiverAddress() == null : this.getReceiverAddress().equals(other.getReceiverAddress()))
+            && (this.getTotalAmount() == null ? other.getTotalAmount() == null : this.getTotalAmount().equals(other.getTotalAmount()))
+            && (this.getFreightAmount() == null ? other.getFreightAmount() == null : this.getFreightAmount().equals(other.getFreightAmount()))
+            && (this.getPayableAmount() == null ? other.getPayableAmount() == null : this.getPayableAmount().equals(other.getPayableAmount()))
+            && (this.getOrderStatus() == null ? other.getOrderStatus() == null : this.getOrderStatus().equals(other.getOrderStatus()))
+            && (this.getPaymentStatus() == null ? other.getPaymentStatus() == null : this.getPaymentStatus().equals(other.getPaymentStatus()))
+            && (this.getDeliveryStatus() == null ? other.getDeliveryStatus() == null : this.getDeliveryStatus().equals(other.getDeliveryStatus()))
+            && (this.getUserRemark() == null ? other.getUserRemark() == null : this.getUserRemark().equals(other.getUserRemark()))
+            && (this.getCancelReason() == null ? other.getCancelReason() == null : this.getCancelReason().equals(other.getCancelReason()))
+            && (this.getPaidAt() == null ? other.getPaidAt() == null : this.getPaidAt().equals(other.getPaidAt()))
+            && (this.getShippedAt() == null ? other.getShippedAt() == null : this.getShippedAt().equals(other.getShippedAt()))
+            && (this.getCompletedAt() == null ? other.getCompletedAt() == null : this.getCompletedAt().equals(other.getCompletedAt()))
+            && (this.getCancelledAt() == null ? other.getCancelledAt() == null : this.getCancelledAt().equals(other.getCancelledAt()))
+            && (this.getCreatedAt() == null ? other.getCreatedAt() == null : this.getCreatedAt().equals(other.getCreatedAt()))
+            && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()));
     }
 
     @Override
@@ -162,25 +181,25 @@ public class Orders {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getOrder_no() == null) ? 0 : getOrder_no().hashCode());
-        result = prime * result + ((getUser_id() == null) ? 0 : getUser_id().hashCode());
-        result = prime * result + ((getReceiver_name() == null) ? 0 : getReceiver_name().hashCode());
-        result = prime * result + ((getReceiver_phone() == null) ? 0 : getReceiver_phone().hashCode());
-        result = prime * result + ((getReceiver_address() == null) ? 0 : getReceiver_address().hashCode());
-        result = prime * result + ((getTotal_amount() == null) ? 0 : getTotal_amount().hashCode());
-        result = prime * result + ((getFreight_amount() == null) ? 0 : getFreight_amount().hashCode());
-        result = prime * result + ((getPayable_amount() == null) ? 0 : getPayable_amount().hashCode());
-        result = prime * result + ((getOrder_status() == null) ? 0 : getOrder_status().hashCode());
-        result = prime * result + ((getPayment_status() == null) ? 0 : getPayment_status().hashCode());
-        result = prime * result + ((getDelivery_status() == null) ? 0 : getDelivery_status().hashCode());
-        result = prime * result + ((getUser_remark() == null) ? 0 : getUser_remark().hashCode());
-        result = prime * result + ((getCancel_reason() == null) ? 0 : getCancel_reason().hashCode());
-        result = prime * result + ((getPaid_at() == null) ? 0 : getPaid_at().hashCode());
-        result = prime * result + ((getShipped_at() == null) ? 0 : getShipped_at().hashCode());
-        result = prime * result + ((getCompleted_at() == null) ? 0 : getCompleted_at().hashCode());
-        result = prime * result + ((getCancelled_at() == null) ? 0 : getCancelled_at().hashCode());
-        result = prime * result + ((getCreated_at() == null) ? 0 : getCreated_at().hashCode());
-        result = prime * result + ((getUpdated_at() == null) ? 0 : getUpdated_at().hashCode());
+        result = prime * result + ((getOrderNo() == null) ? 0 : getOrderNo().hashCode());
+        result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
+        result = prime * result + ((getReceiverName() == null) ? 0 : getReceiverName().hashCode());
+        result = prime * result + ((getReceiverPhone() == null) ? 0 : getReceiverPhone().hashCode());
+        result = prime * result + ((getReceiverAddress() == null) ? 0 : getReceiverAddress().hashCode());
+        result = prime * result + ((getTotalAmount() == null) ? 0 : getTotalAmount().hashCode());
+        result = prime * result + ((getFreightAmount() == null) ? 0 : getFreightAmount().hashCode());
+        result = prime * result + ((getPayableAmount() == null) ? 0 : getPayableAmount().hashCode());
+        result = prime * result + ((getOrderStatus() == null) ? 0 : getOrderStatus().hashCode());
+        result = prime * result + ((getPaymentStatus() == null) ? 0 : getPaymentStatus().hashCode());
+        result = prime * result + ((getDeliveryStatus() == null) ? 0 : getDeliveryStatus().hashCode());
+        result = prime * result + ((getUserRemark() == null) ? 0 : getUserRemark().hashCode());
+        result = prime * result + ((getCancelReason() == null) ? 0 : getCancelReason().hashCode());
+        result = prime * result + ((getPaidAt() == null) ? 0 : getPaidAt().hashCode());
+        result = prime * result + ((getShippedAt() == null) ? 0 : getShippedAt().hashCode());
+        result = prime * result + ((getCompletedAt() == null) ? 0 : getCompletedAt().hashCode());
+        result = prime * result + ((getCancelledAt() == null) ? 0 : getCancelledAt().hashCode());
+        result = prime * result + ((getCreatedAt() == null) ? 0 : getCreatedAt().hashCode());
+        result = prime * result + ((getUpdatedAt() == null) ? 0 : getUpdatedAt().hashCode());
         return result;
     }
 
@@ -191,25 +210,25 @@ public class Orders {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", order_no=").append(order_no);
-        sb.append(", user_id=").append(user_id);
-        sb.append(", receiver_name=").append(receiver_name);
-        sb.append(", receiver_phone=").append(receiver_phone);
-        sb.append(", receiver_address=").append(receiver_address);
-        sb.append(", total_amount=").append(total_amount);
-        sb.append(", freight_amount=").append(freight_amount);
-        sb.append(", payable_amount=").append(payable_amount);
-        sb.append(", order_status=").append(order_status);
-        sb.append(", payment_status=").append(payment_status);
-        sb.append(", delivery_status=").append(delivery_status);
-        sb.append(", user_remark=").append(user_remark);
-        sb.append(", cancel_reason=").append(cancel_reason);
-        sb.append(", paid_at=").append(paid_at);
-        sb.append(", shipped_at=").append(shipped_at);
-        sb.append(", completed_at=").append(completed_at);
-        sb.append(", cancelled_at=").append(cancelled_at);
-        sb.append(", created_at=").append(created_at);
-        sb.append(", updated_at=").append(updated_at);
+        sb.append(", orderNo=").append(orderNo);
+        sb.append(", userId=").append(userId);
+        sb.append(", receiverName=").append(receiverName);
+        sb.append(", receiverPhone=").append(receiverPhone);
+        sb.append(", receiverAddress=").append(receiverAddress);
+        sb.append(", totalAmount=").append(totalAmount);
+        sb.append(", freightAmount=").append(freightAmount);
+        sb.append(", payableAmount=").append(payableAmount);
+        sb.append(", orderStatus=").append(orderStatus);
+        sb.append(", paymentStatus=").append(paymentStatus);
+        sb.append(", deliveryStatus=").append(deliveryStatus);
+        sb.append(", userRemark=").append(userRemark);
+        sb.append(", cancelReason=").append(cancelReason);
+        sb.append(", paidAt=").append(paidAt);
+        sb.append(", shippedAt=").append(shippedAt);
+        sb.append(", completedAt=").append(completedAt);
+        sb.append(", cancelledAt=").append(cancelledAt);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", updatedAt=").append(updatedAt);
         sb.append("]");
         return sb.toString();
     }

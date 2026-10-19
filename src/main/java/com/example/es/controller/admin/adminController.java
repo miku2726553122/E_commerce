@@ -4,6 +4,7 @@ import com.example.es.service.UsersService;
 import com.example.es.utils.Response;
 import com.example.es.vo.admin.AddMechantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
+import com.example.es.vo.admin.ResetPasswordReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,11 +60,30 @@ public class adminController {
         return usersService.addMerchant(addMechantsReqVO);
     }
 
+    /**
+     * 启用或禁用用户
+     * @param id
+     * @param status
+     * @return
+     */
 
     @PutMapping("/users/{id}/status")
     @Operation(summary = "启用或禁用用户", description = "启用或禁用用户")
     public Response EDUser(@PathVariable Long id, @RequestParam Integer status) {
         return usersService.enableOrDisableUser(id, status);
+    }
+
+    /**
+     * 重置用户密码
+     * @param id
+      * @param reqVO
+     * @return
+     */
+
+    @PutMapping("/users/{id}/reset-Password")
+    @Operation(summary = "重置用户密码", description = "重置用户密码")
+    public Response resetPassword(@PathVariable Long id, @RequestBody @Validated ResetPasswordReqVO reqVO) {
+        return usersService.resetPassword(id, reqVO.getNewPassword());
     }
 
 

@@ -19,4 +19,6 @@ public interface UsersService extends IService<Users> {
     Response addMerchant(AddMechantsReqVO addMechantsReqVO);
 
     Response enableOrDisableUser(Long id, Integer status);
+
+    Response resetPassword(Long id, String newPassword);
 }

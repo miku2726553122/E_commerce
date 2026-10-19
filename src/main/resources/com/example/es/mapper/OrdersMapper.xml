@@ -6,25 +6,25 @@
 
     <resultMap id="BaseResultMap" type="com.example.es.entity.Orders">
             <id property="id" column="id" />
-            <result property="order_no" column="order_no" />
-            <result property="user_id" column="user_id" />
-            <result property="receiver_name" column="receiver_name" />
-            <result property="receiver_phone" column="receiver_phone" />
-            <result property="receiver_address" column="receiver_address" />
-            <result property="total_amount" column="total_amount" />
-            <result property="freight_amount" column="freight_amount" />
-            <result property="payable_amount" column="payable_amount" />
-            <result property="order_status" column="order_status" />
-            <result property="payment_status" column="payment_status" />
-            <result property="delivery_status" column="delivery_status" />
-            <result property="user_remark" column="user_remark" />
-            <result property="cancel_reason" column="cancel_reason" />
-            <result property="paid_at" column="paid_at" />
-            <result property="shipped_at" column="shipped_at" />
-            <result property="completed_at" column="completed_at" />
-            <result property="cancelled_at" column="cancelled_at" />
-            <result property="created_at" column="created_at" />
-            <result property="updated_at" column="updated_at" />
+            <result property="orderNo" column="order_no" />
+            <result property="userId" column="user_id" />
+            <result property="receiverName" column="receiver_name" />
+            <result property="receiverPhone" column="receiver_phone" />
+            <result property="receiverAddress" column="receiver_address" />
+            <result property="totalAmount" column="total_amount" />
+            <result property="freightAmount" column="freight_amount" />
+            <result property="payableAmount" column="payable_amount" />
+            <result property="orderStatus" column="order_status" />
+            <result property="paymentStatus" column="payment_status" />
+            <result property="deliveryStatus" column="delivery_status" />
+            <result property="userRemark" column="user_remark" />
+            <result property="cancelReason" column="cancel_reason" />
+            <result property="paidAt" column="paid_at" />
+            <result property="shippedAt" column="shipped_at" />
+            <result property="completedAt" column="completed_at" />
+            <result property="cancelledAt" column="cancelled_at" />
+            <result property="createdAt" column="created_at" />
+            <result property="updatedAt" column="updated_at" />
     </resultMap>
 
     <sql id="Base_Column_List">

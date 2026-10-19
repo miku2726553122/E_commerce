@@ -6,9 +6,9 @@
 
     <resultMap id="BaseResultMap" type="com.example.es.entity.Carts">
             <id property="id" column="id" />
-            <result property="user_id" column="user_id" />
-            <result property="created_at" column="created_at" />
-            <result property="updated_at" column="updated_at" />
+            <result property="userId" column="user_id" />
+            <result property="createdAt" column="created_at" />
+            <result property="updatedAt" column="updated_at" />
     </resultMap>
 
     <sql id="Base_Column_List">

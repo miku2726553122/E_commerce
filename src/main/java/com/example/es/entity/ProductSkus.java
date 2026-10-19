@@ -31,17 +31,20 @@ public class ProductSkus {
     /**
      * 商品ID
      */
-    private Long product_id;
+    @TableField("product_id")
+    private Long productId;
 
     /**
      * SKU编码
      */
-    private String sku_code;
+    @TableField("sku_code")
+    private String skuCode;
 
     /**
      * SKU名称
      */
-    private String sku_name;
+    @TableField("sku_name")
+    private String skuName;
 
     /**
      * 商品规格
@@ -51,17 +54,20 @@ public class ProductSkus {
     /**
      * 原价
      */
-    private BigDecimal original_price;
+    @TableField("original_price")
+    private BigDecimal originalPrice;
 
     /**
      * 销售价
      */
-    private BigDecimal sale_price;
+    @TableField("sale_price")
+    private BigDecimal salePrice;
 
     /**
      * SKU图片
      */
-    private String image_url;
+    @TableField("image_url")
+    private String imageUrl;
 
     /**
      * 状态：0停用、1启用
@@ -71,12 +77,14 @@ public class ProductSkus {
     /**
      * 
      */
-    private LocalDateTime created_at;
+    @TableField("created_at")
+    private LocalDateTime createdAt;
 
     /**
      * 
      */
-    private LocalDateTime updated_at;
+    @TableField("updated_at")
+    private LocalDateTime updatedAt;
 
     @Override
     public boolean equals(Object that) {
@@ -91,16 +99,16 @@ public class ProductSkus {
         }
         ProductSkus other = (ProductSkus) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getProduct_id() == null ? other.getProduct_id() == null : this.getProduct_id().equals(other.getProduct_id()))
-            && (this.getSku_code() == null ? other.getSku_code() == null : this.getSku_code().equals(other.getSku_code()))
-            && (this.getSku_name() == null ? other.getSku_name() == null : this.getSku_name().equals(other.getSku_name()))
+            && (this.getProductId() == null ? other.getProductId() == null : this.getProductId().equals(other.getProductId()))
+            && (this.getSkuCode() == null ? other.getSkuCode() == null : this.getSkuCode().equals(other.getSkuCode()))
+            && (this.getSkuName() == null ? other.getSkuName() == null : this.getSkuName().equals(other.getSkuName()))
             && (this.getSpecification() == null ? other.getSpecification() == null : this.getSpecification().equals(other.getSpecification()))
-            && (this.getOriginal_price() == null ? other.getOriginal_price() == null : this.getOriginal_price().equals(other.getOriginal_price()))
-            && (this.getSale_price() == null ? other.getSale_price() == null : this.getSale_price().equals(other.getSale_price()))
-            && (this.getImage_url() == null ? other.getImage_url() == null : this.getImage_url().equals(other.getImage_url()))
+            && (this.getOriginalPrice() == null ? other.getOriginalPrice() == null : this.getOriginalPrice().equals(other.getOriginalPrice()))
+            && (this.getSalePrice() == null ? other.getSalePrice() == null : this.getSalePrice().equals(other.getSalePrice()))
+            && (this.getImageUrl() == null ? other.getImageUrl() == null : this.getImageUrl().equals(other.getImageUrl()))
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
-            && (this.getCreated_at() == null ? other.getCreated_at() == null : this.getCreated_at().equals(other.getCreated_at()))
-            && (this.getUpdated_at() == null ? other.getUpdated_at() == null : this.getUpdated_at().equals(other.getUpdated_at()));
+            && (this.getCreatedAt() == null ? other.getCreatedAt() == null : this.getCreatedAt().equals(other.getCreatedAt()))
+            && (this.getUpdatedAt() == null ? other.getUpdatedAt() == null : this.getUpdatedAt().equals(other.getUpdatedAt()));
     }
 
     @Override
@@ -108,16 +116,16 @@ public class ProductSkus {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getProduct_id() == null) ? 0 : getProduct_id().hashCode());
-        result = prime * result + ((getSku_code() == null) ? 0 : getSku_code().hashCode());
-        result = prime * result + ((getSku_name() == null) ? 0 : getSku_name().hashCode());
+        result = prime * result + ((getProductId() == null) ? 0 : getProductId().hashCode());
+        result = prime * result + ((getSkuCode() == null) ? 0 : getSkuCode().hashCode());
+        result = prime * result + ((getSkuName() == null) ? 0 : getSkuName().hashCode());
         result = prime * result + ((getSpecification() == null) ? 0 : getSpecification().hashCode());
-        result = prime * result + ((getOriginal_price() == null) ? 0 : getOriginal_price().hashCode());
-        result = prime * result + ((getSale_price() == null) ? 0 : getSale_price().hashCode());
-        result = prime * result + ((getImage_url() == null) ? 0 : getImage_url().hashCode());
+        result = prime * result + ((getOriginalPrice() == null) ? 0 : getOriginalPrice().hashCode());
+        result = prime * result + ((getSalePrice() == null) ? 0 : getSalePrice().hashCode());
+        result = prime * result + ((getImageUrl() == null) ? 0 : getImageUrl().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
-        result = prime * result + ((getCreated_at() == null) ? 0 : getCreated_at().hashCode());
-        result = prime * result + ((getUpdated_at() == null) ? 0 : getUpdated_at().hashCode());
+        result = prime * result + ((getCreatedAt() == null) ? 0 : getCreatedAt().hashCode());
+        result = prime * result + ((getUpdatedAt() == null) ? 0 : getUpdatedAt().hashCode());
         return result;
     }
 
@@ -128,16 +136,16 @@ public class ProductSkus {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", product_id=").append(product_id);
-        sb.append(", sku_code=").append(sku_code);
-        sb.append(", sku_name=").append(sku_name);
+        sb.append(", productId=").append(productId);
+        sb.append(", skuCode=").append(skuCode);
+        sb.append(", skuName=").append(skuName);
         sb.append(", specification=").append(specification);
-        sb.append(", original_price=").append(original_price);
-        sb.append(", sale_price=").append(sale_price);
-        sb.append(", image_url=").append(image_url);
+        sb.append(", originalPrice=").append(originalPrice);
+        sb.append(", salePrice=").append(salePrice);
+        sb.append(", imageUrl=").append(imageUrl);
         sb.append(", status=").append(status);
-        sb.append(", created_at=").append(created_at);
-        sb.append(", updated_at=").append(updated_at);
+        sb.append(", createdAt=").append(createdAt);
+        sb.append(", updatedAt=").append(updatedAt);
         sb.append("]");
         return sb.toString();
     }

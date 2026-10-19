@@ -13,7 +13,13 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     FAIL("500", "失败"),
     PARAM_ERROR("400", "参数错误"),
     NOT_FOUND("404", "资源未找到"),
-    INTERNAL_SERVER_ERROR("500", "服务器错误");
+    INTERNAL_SERVER_ERROR("500", "服务器错误"),
+    USER_NOT_FOUND("1000", "用户未找到"),
+    PASSWORD_SAME("1001", "密码相同"),
+
+
+
+    ;
 
     // 异常码
     private String errorCode;
