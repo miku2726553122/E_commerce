@@ -2,6 +2,8 @@ package com.example.es.service;
 
 import com.example.es.entity.Users;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.example.es.utils.Response;
+import com.example.es.vo.admin.FindAllRoleReqVO;
 
 /**
 * @author 86159
@@ -9,5 +11,7 @@ import com.baomidou.mybatisplus.spring.service.IService;
 * @createDate 2026-10-19 10:21:26
 */
 public interface UsersService extends IService<Users> {
+    Response selectAllRole(FindAllRoleReqVO reqVO);
 
+    Response selectById(Long id);
 }
