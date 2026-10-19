@@ -2,6 +2,7 @@ package com.example.es.controller.admin;
 
 import com.example.es.service.UsersService;
 import com.example.es.utils.Response;
+import com.example.es.vo.admin.AddMechantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,16 +25,33 @@ public class adminController {
         return "Hello Admin";
     }
 
+    /**
+     * 查询所有角色
+     *
+     * @param reqVO
+     * @return
+     */
     @Operation(summary = "查询所有角色", description = "查询所有角色")
     @GetMapping("/users")
     public Response selectAllRole(FindAllRoleReqVO reqVO) {
        return  usersService.selectAllRole(reqVO);
     }
 
+    /**
+     * 根据id获取用户信息
+     * @param id
+     * @return
+     */
     @GetMapping("/users/{id}")
     @Operation(summary = "根据id获取用户信息", description = "根据id获取用户信息")
     public Response selectById(Long id) {
         return usersService.selectById(id);
     }
 
+
+    @GetMapping("/merchants")
+    @Operation(summary = "添加商户", description = "添加商户")
+    public Response addmerchants(AddMechantsReqVO addMechantsReqVO) {
+        return usersService.addMerchant(addMechantsReqVO);
+    }
 }

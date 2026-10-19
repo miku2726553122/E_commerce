@@ -3,6 +3,7 @@ package com.example.es.service;
 import com.example.es.entity.Users;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
+import com.example.es.vo.admin.AddMechantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 
 /**
@@ -14,4 +15,6 @@ public interface UsersService extends IService<Users> {
     Response selectAllRole(FindAllRoleReqVO reqVO);
 
     Response selectById(Long id);
+
+    Response addMerchant(AddMechantsReqVO addMechantsReqVO);
 }
