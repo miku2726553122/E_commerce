@@ -5,7 +5,11 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 商品分类表
@@ -13,6 +17,9 @@ import lombok.Data;
  */
 @TableName(value ="categories")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Categories {
     /**
      * 分类ID

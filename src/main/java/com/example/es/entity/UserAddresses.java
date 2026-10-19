@@ -5,7 +5,11 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 用户收货地址表
@@ -13,6 +17,9 @@ import lombok.Data;
  */
 @TableName(value ="user_addresses")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class UserAddresses {
     /**
      * 地址ID

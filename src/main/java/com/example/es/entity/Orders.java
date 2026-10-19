@@ -6,7 +6,11 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 订单表
@@ -14,6 +18,9 @@ import lombok.Data;
  */
 @TableName(value ="orders")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Orders {
     /**
      * 订单ID
