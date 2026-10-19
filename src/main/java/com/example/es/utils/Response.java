@@ -17,29 +17,29 @@ public class Response<T> implements Serializable {
     // =================================== 成功响应 ===================================
     public static <T> Response<T> success() {
         Response<T> response = new Response<>();
-        response.setSuccess(true);
         response.setMessage("成功");
+        response.setSuccess(true);
         return response;
     }
 
     public static <T> Response<T> success(T data) {
         Response<T> response = new Response<>();
-        response.setSuccess(true);
-        response.setMessage("成功");
         response.setData(data);
+        response.setMessage("成功");
+        response.setSuccess(true);
         return response;
     }
     // =================================== 失败响应 ===================================
     public static <T> Response<T> fail() {
         Response<T> response = new Response<>();
-        response.setSuccess(false);
         response.setMessage("失败");
+        response.setSuccess(false);
         return response;
     }
     public static <T> Response<T> fail(String message) {
         Response<T> response = new Response<>();
-        response.setSuccess(false);
         response.setMessage(message);
+        response.setSuccess(false);
         return response;
     }
 }
