@@ -2,8 +2,12 @@ package com.example.es.service.impl;
 
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.example.es.entity.Products;
+import com.example.es.enums.ResponseCodeEnum;
 import com.example.es.service.ProductsService;
 import com.example.es.mapper.ProductsMapper;
+import com.example.es.utils.Response;
+import com.example.es.vo.merchant.shopproduct.CreateMerchantProductReqVO;
+import com.example.es.vo.merchant.shopproduct.CreateMerchantProductRspVO;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,6 +18,48 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
     implements ProductsService{
+
+    @Override
+    public Response createMerchantProduct(Long merchantId,
+                                          CreateMerchantProductReqVO reqVO) {
+        if (merchantId==null
+                ||reqVO==null
+                ||reqVO.getCategoryId()==null
+                ||reqVO.getProductName()==null
+                ||reqVO.getProductName().isBlank()
+                ||reqVO.getProductCode()==null
+                ||reqVO.getProductCode().isBlank()
+                ||reqVO.getBasePrice()==null){
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        }
+
+        Products product = Products.builder()
+                .merchantId(merchantId)
+                .categoryId(reqVO.getCategoryId())
+                .productName(reqVO.getProductName())
+                .productCode(reqVO.getProductCode())
+                .mainImage(reqVO.getMainImage())
+                .description(reqVO.getDescription())
+                .detailContent(reqVO.getDetailContent())
+                .basePrice(reqVO.getBasePrice())
+                .auditStatus(0)
+                .saleStatus(0)
+                .build();
+
+        Boolean save = this.save(product);
+        if (!save) {
+            return Response.success(ResponseCodeEnum.FAIL);
+        }
+
+        CreateMerchantProductRspVO rspVO = CreateMerchantProductRspVO.builder()
+                .id(product.getId())
+                .merchantId(product.getMerchantId())
+                .auditStatus(product.getAuditStatus())
+                .saleStatus(product.getSaleStatus())
+                .build();
+
+        return Response.success(rspVO);
+    }
 
 }
 

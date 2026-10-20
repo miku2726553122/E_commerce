@@ -2,6 +2,8 @@ package com.example.es.service;
 
 import com.example.es.entity.Products;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.example.es.utils.Response;
+import com.example.es.vo.merchant.shopproduct.CreateMerchantProductReqVO;
 
 /**
 * @author 86159
@@ -9,5 +11,6 @@ import com.baomidou.mybatisplus.spring.service.IService;
 * @createDate 2026-10-19 10:21:26
 */
 public interface ProductsService extends IService<Products> {
-
+    Response createMerchantProduct(Long merchantId,
+                                   CreateMerchantProductReqVO reqVO);
 }
