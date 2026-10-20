@@ -3,6 +3,7 @@ package com.example.es.controller.admin;
 import com.example.es.service.ProductsService;
 import com.example.es.utils.Response;
 import com.example.es.vo.admin.FindAllProductsReqVO;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +19,10 @@ public class ProductReviewandOrderManagementController {
     private ProductsService productsService;
 
     @GetMapping ("/products")
-    @Tag(name = "获取所有商品", description = "获取所有商品列表")
+    @Operation(summary = "获取所有商品", description = "获取所有商品列表")
     public Response getAllProducts(FindAllProductsReqVO findAllProductsReqVO) {
         return productsService.findAllProducts(findAllProductsReqVO);
     }
+
+
 }
