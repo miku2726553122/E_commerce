@@ -677,3 +677,9 @@ public class ResetPasswordReqVO {
 - 再次执行 `git fetch origin --prune` 时错误变为 `Recv failure: Connection was reset`，目标已经是 `github.com`；这说明当前网络对 GitHub 的 HTTPS 请求被中途重置，和之前的 `gh.llkk.cc` 镜像连接失败是两个阶段。`Test-NetConnection github.com -Port 443` 能连通 TCP 端口，但 HTTPS 请求仍可能被网络、代理或防火墙重置；端口连通不等于 Git 协议可用。
 - 当前不建议直接执行 `git pull` 或 IDEA“更新项目”：工作区仍有大量本地新增、删除、重命名和修改。应先在可访问 GitHub 的网络、VPN 或正确配置的 Git 代理下成功 `fetch`，再查看远程提交并单独决定是否合并。
 - 用户已将 `QueMerchantProductsReqVO` 改名为 `QueryMerchantProductsReqVO`，将 `UpdateMerchantProductsListReqVO` 改名为 `UpdateMerchantProductStatusReqVO`，命名方向正确；后者暂时仍有 `id` 字段，后续按接口路径参数规则再处理。
+
+### 2026-10-20 当前上下文：上下架 VO 与 Fetch/Pull 区分
+
+- `UpdateMerchantProductStatusReqVO` 当前类名、`id` 和 `saleStatus` 的 Java 命名均可编译；按 PDF 契约，最终请求 body 只应包含 `saleStatus`，商品 `id` 由 Controller 的 `@PathVariable Long id` 接收，后续实现接口时再移除 VO 中的 `id`，当前不作为编译阻断项。
+- 当前 `master` 工作区仍有大量未提交新增、删除、重命名和修改；`git rev-list --left-right --count master...origin/master` 显示 `0 0` 只代表本地保存的 `origin/master` 引用尚未变化，不能证明远程仓库当前没有新提交，因为最近 fetch 仍未成功。
+- 教学中的 Git 操作顺序固定为：`fetch` 只提取远程引用、不修改工作文件；`pull` 会提取并合并，必须在本地修改已经保存（提交或 stash）且确认远程提交后再执行。当前先不 pull。
