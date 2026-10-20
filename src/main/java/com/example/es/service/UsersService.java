@@ -21,4 +21,6 @@ public interface UsersService extends IService<Users> {
     Response enableOrDisableUser(Long id, Integer status);
 
     Response resetPassword(Long id, String newPassword);
+
+    Response deleteUserInfo(Long id);
 }

@@ -16,6 +16,7 @@ import org.apache.catalina.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
 * @author 86159
@@ -143,6 +144,22 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         usersMapper.updateById(user);
 
         return Response.success(null);
+    }
+
+    /**
+     * 删除用户信息
+     * @param id
+     * @return
+     */
+    @Override
+    public Response deleteUserInfo(Long id) {
+        Users findUser = usersMapper.selectById(id);
+
+        if (findUser == null)
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+
+        usersMapper.deleteById(id);
+        return Response.success();
     }
 }
 

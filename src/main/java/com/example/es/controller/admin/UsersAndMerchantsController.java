@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "管理员接口", description = "管理员相关接口")
 @RestController
 @RequestMapping("/admin")
-public class adminController {
+public class UsersAndMerchantsController {
 
     @Autowired
     private UsersService usersService;
@@ -86,5 +86,11 @@ public class adminController {
         return usersService.resetPassword(id, reqVO.getNewPassword());
     }
 
+
+    @Operation(summary = "删除用户信息", description = "删除用户信息")
+    @DeleteMapping("/users/{id}")
+    public Response deleteUserInfo(@PathVariable Long id){
+        return usersService.deleteUserInfo(id);
+    }
 
 }
