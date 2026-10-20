@@ -1,7 +1,12 @@
 package com.example.es.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.es.entity.Orders;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.es.vo.admin.FindPageByOrdersReqVO;
+import org.springframework.util.StringUtils;
 
 /**
 * @author 86159
@@ -11,6 +16,18 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface OrdersMapper extends BaseMapper<Orders> {
 
+    default Page<Orders> findPageByOrders(FindPageByOrdersReqVO reqVO){
+        Page<Orders> page = new Page<>(reqVO.getPageNum(), reqVO.getPageSize());
+
+        // 构建查询条件
+        LambdaQueryWrapper<Orders> wrapper = Wrappers.<Orders>lambdaQuery()
+                .eq(StringUtils.hasText(reqVO.getOrderNo()), Orders::getOrderNo, reqVO.getOrderNo())
+                .eq(reqVO.getUserId() != null, Orders::getUserId, reqVO.getUserId())
+                .eq(StringUtils.hasText(reqVO.getOrderStatus()), Orders::getOrderStatus, reqVO.getOrderStatus())
+                .orderByDesc(Orders::getCreatedAt);
+
+        return selectPage(page, wrapper);
+    }
 }
 
 

@@ -8,6 +8,7 @@ import com.example.es.mapper.ProductsMapper;
 import com.example.es.utils.Response;
 import com.example.es.vo.admin.FindAllProductsReqVO;
 import com.example.es.vo.admin.FindAllProductsRspVO;
+import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,35 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
 
 
         return Response.success(vos);
+    }
+
+    /**
+     * 审核商品
+     * @param id
+     * @param findAndUpdateReviewProductReqVO
+     * @return
+     */
+    @Override
+    public Response reviewProduct(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO) {
+        //商品是否存在
+        if (!productsMapper.existsById(id)) {
+            return Response.fail("商品不存在");
+        }
+
+        boolean result = productsMapper.reviewProduct(id, findAndUpdateReviewProductReqVO.getAuditStatus(), findAndUpdateReviewProductReqVO.getAuditRemark());
+
+        return result? Response.success():Response.fail("参数错误");
+    }
+
+    @Override
+    public Response updareProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO) {
+
+        if (!productsMapper.existsById(id)) {
+            return Response.fail("商品不存在");
+        }
+
+        boolean result = productsMapper.updareProductShelf(id, findAndUpdateReviewProductReqVO.getSaleStatus());
+        return result? Response.success():Response.fail("参数错误");
     }
 }
 

@@ -4,6 +4,7 @@ import com.example.es.entity.Products;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
 import com.example.es.vo.admin.FindAllProductsReqVO;
+import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
 
 /**
 * @author 86159
@@ -13,4 +14,8 @@ import com.example.es.vo.admin.FindAllProductsReqVO;
 public interface ProductsService extends IService<Products> {
 
     Response findAllProducts(FindAllProductsReqVO findAllProductsReqVO);
+
+    Response reviewProduct(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO);
+
+    Response updareProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO);
 }
