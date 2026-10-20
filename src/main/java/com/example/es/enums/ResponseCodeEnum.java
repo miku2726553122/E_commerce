@@ -16,7 +16,8 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     INTERNAL_SERVER_ERROR("500", "服务器错误"),
     USER_NOT_FOUND("1000", "用户未找到"),
     PASSWORD_SAME("1001", "密码相同"),
-
+    UNAUTHORIZED("401", "未登录或未配置商家身份"),
+    FORBIDDEN("403", "当前账号不是商家"),
 
 
     ;

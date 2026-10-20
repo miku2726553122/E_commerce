@@ -12,10 +12,11 @@ import com.example.es.vo.admin.AddMechantsReqVO;
 import com.example.es.vo.admin.AddMerchantsRspVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import com.example.es.vo.admin.FindByIdRspVO;
-import org.apache.catalina.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.es.vo.merchant.shopproduct.MerchantProfileRspVO;
+import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
 
 /**
 * @author 86159
@@ -143,6 +144,48 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         usersMapper.updateById(user);
 
         return Response.success(null);
+    }
+
+    @Override
+    public Response getMerchantProfile(Long merchantId) {
+        Users user = usersMapper.selectById(merchantId);
+        if (user == null) {
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+        if (!"MERCHANT".equals(user.getRole())) {
+            return Response.fail(ResponseCodeEnum.FORBIDDEN);
+        }
+
+        MerchantProfileRspVO rspVO = MerchantProfileRspVO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .shopName(user.getShopName())
+                .shopLogo(user.getShopLogo())
+                .build();
+        return Response.success(rspVO);
+    }
+
+    @Override
+    public Response updateMerchantProfile(Long merchantId, UpdateMerchantProfileReqVO reqVO) {
+        Users user = usersMapper.selectById(merchantId);
+        if (user == null) {
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+        if (!"MERCHANT".equals(user.getRole())) {
+            return Response.fail(ResponseCodeEnum.FORBIDDEN);
+        }
+        if (reqVO == null) {
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        }
+
+        Users update = Users.builder()
+                .id(merchantId)
+                .shopName(reqVO.getShopName())
+                .shopLogo(reqVO.getShopLogo())
+                .nickname(reqVO.getNickname())
+                .build();
+        boolean updated = this.updateById(update);
+        return Response.success(updated);
     }
 }
 

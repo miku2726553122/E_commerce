@@ -35,4 +35,13 @@ public class OpenApiConfig {
                 .packagesToScan("com.example.es.controller.user")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi merchantApi() {
+        return GroupedOpenApi.builder()
+                .group("merchant")
+                .pathsToMatch("/merchant/**")
+                .packagesToScan("com.example.es.controller.merchant")
+                .build();
+    }
 }

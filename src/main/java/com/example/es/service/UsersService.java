@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
 import com.example.es.vo.admin.AddMechantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
+import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
 
 /**
 * @author 86159
@@ -21,4 +22,8 @@ public interface UsersService extends IService<Users> {
     Response enableOrDisableUser(Long id, Integer status);
 
     Response resetPassword(Long id, String newPassword);
+
+    Response getMerchantProfile(Long merchantId);
+
+    Response updateMerchantProfile(Long merchantId, UpdateMerchantProfileReqVO reqVO);
 }

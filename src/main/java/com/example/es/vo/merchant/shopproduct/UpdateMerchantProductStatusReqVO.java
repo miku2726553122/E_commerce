@@ -1,0 +1,18 @@
+package com.example.es.vo.merchant.shopproduct;//商品上下架
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Schema(description = "商品上下架")
+public class UpdateMerchantProductStatusReqVO {
+    private Long id;
+    private Integer saleStatus;
+}
