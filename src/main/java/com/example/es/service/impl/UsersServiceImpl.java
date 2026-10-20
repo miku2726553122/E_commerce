@@ -1,22 +1,24 @@
 package com.example.es.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.example.es.entity.Users;
 import com.example.es.enums.ResponseCodeEnum;
 import com.example.es.service.UsersService;
 import com.example.es.mapper.UsersMapper;
+import com.example.es.utils.JwtUtils;
 import com.example.es.utils.PasswordUtil;
 import com.example.es.utils.Response;
+import com.example.es.vo.UserDetail;
 import com.example.es.vo.admin.AddMechantsReqVO;
 import com.example.es.vo.admin.AddMerchantsRspVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import com.example.es.vo.admin.FindByIdRspVO;
-import org.apache.catalina.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 /**
 * @author 86159
@@ -30,6 +32,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
     @Autowired
     private UsersMapper usersMapper;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
 
     /**
@@ -160,6 +165,32 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
         usersMapper.deleteById(id);
         return Response.success();
+    }
+
+    @Override
+    public ResponseEntity<String> login(UserDetail userDetail) {
+        // 1. 根据用户名查用户
+        Users user = usersMapper.findByUsername(userDetail.getUsername());
+        if (user == null) {
+            log.warn("登录失败：用户 [{}] 不存在", userDetail.getUsername());
+            return ResponseEntity.status(401).build();
+        }
+
+        // 2. 账号是否启用
+        if (user.getStatus() == null || user.getStatus() != 1) {
+            log.warn("登录失败：账号 [{}] 已被禁用", userDetail.getUsername());
+            return ResponseEntity.status(403).build();
+        }
+
+        // 3. 校验密码（BCrypt 不能用 equals 直接比对密文）
+        if (!PasswordUtil.matches(userDetail.getPassword(), user.getPasswordHash())) {
+            log.warn("登录失败：用户 [{}] 密码错误", userDetail.getUsername());
+            return ResponseEntity.status(401).build();
+        }
+
+        // 4. 生成 JWT
+        String token = jwtUtils.generateToken(user);
+        return ResponseEntity.ok(token);
     }
 }
 

@@ -11,6 +11,7 @@ import com.example.es.vo.admin.AddCategoryReqVO;
 import com.example.es.vo.admin.AddCategoryRspVO;
 import com.example.es.vo.admin.FindAllCategoriesRspVO;
 import com.example.es.vo.admin.UpdateCategoriesReqVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.util.List;
  * @description 针对表【categories(商品分类表)】的数据库操作Service实现
  * @createDate 2026-10-19 10:21:26
  */
+@Slf4j
 @Service
 public class CategoriesServiceImpl extends ServiceImpl<CategoriesMapper, Categories>
         implements CategoriesService {
@@ -106,6 +108,8 @@ public class CategoriesServiceImpl extends ServiceImpl<CategoriesMapper, Categor
                 .build();
 
         categoriesMapper.updateById(category);
+
+        log.info("更新分类成功");
 
         return Response.success();
     }

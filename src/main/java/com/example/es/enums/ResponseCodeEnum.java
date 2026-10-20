@@ -16,6 +16,7 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     INTERNAL_SERVER_ERROR("500", "服务器错误"),
     USER_NOT_FOUND("1000", "用户未找到"),
     PASSWORD_SAME("1001", "密码相同"),
+    USERNAME_PASSWORD_ERROR("1002", "用户名或密码错误"),
 
 
 

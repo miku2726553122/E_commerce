@@ -38,4 +38,11 @@ class ECommerceSystemApplicationTests {
         System.out.println("matches(新密码, 新生成哈希): " + PasswordUtil.matches(testPassword, encoded));
     }
 
+    @Test
+    void encodePassword() {
+        String password = "12345678";
+        String encoded = PasswordUtil.encode(password);
+        System.out.println("Encoded password: " + encoded);
+    }
+
 }

@@ -2,6 +2,8 @@ package com.example.es.service;
 
 import com.example.es.entity.Products;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.example.es.utils.Response;
+import com.example.es.vo.admin.FindAllProductsReqVO;
 
 /**
 * @author 86159
@@ -10,4 +12,5 @@ import com.baomidou.mybatisplus.spring.service.IService;
 */
 public interface ProductsService extends IService<Products> {
 
+    Response findAllProducts(FindAllProductsReqVO findAllProductsReqVO);
 }

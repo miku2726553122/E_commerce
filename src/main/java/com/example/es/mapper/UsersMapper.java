@@ -9,9 +9,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.Objects;
 
-import static com.baomidou.mybatisplus.core.toolkit.Wrappers.lambdaQuery;
-import static javax.management.Query.eq;
-
 /**
  * @author 86159
  * @description 针对表【users(用户表)】的数据库操作Mapper
@@ -32,6 +29,15 @@ public interface UsersMapper extends BaseMapper<Users> {
                 .orderByDesc(Users::getCreatedAt);                                // 按创建时间倒序
 
         return selectPage(page, wrapper);
+    }
+
+    /**
+     * 根据用户名查询用户
+     */
+    default Users findByUsername(String username) {
+        LambdaQueryWrapper<Users> wrapper = Wrappers.<Users>lambdaQuery()
+                .eq(Users::getUsername, username);
+        return selectOne(wrapper);
     }
 
 }
