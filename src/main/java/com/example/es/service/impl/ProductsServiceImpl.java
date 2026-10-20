@@ -29,8 +29,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
 
         Page<Products> page = productsMapper.findAllProducts(findAllProductsReqVO);
 
-        FindAllProductsRspVO vos=null;
-        vos = FindAllProductsRspVO.builder()
+        FindAllProductsRspVO vos = FindAllProductsRspVO.builder()
                 .records(page.getRecords())
                 .total(page.getTotal())
                 .pageNum((int) page.getCurrent())
@@ -60,13 +59,13 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
     }
 
     @Override
-    public Response updareProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO) {
+    public Response updateProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO) {
 
         if (!productsMapper.existsById(id)) {
             return Response.fail("商品不存在");
         }
 
-        boolean result = productsMapper.updareProductShelf(id, findAndUpdateReviewProductReqVO.getSaleStatus());
+        boolean result = productsMapper.updateProductShelf(id, findAndUpdateReviewProductReqVO.getSaleStatus());
         return result? Response.success():Response.fail("参数错误");
     }
 }

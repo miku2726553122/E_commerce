@@ -4,7 +4,7 @@ import com.example.es.entity.Users;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
 import com.example.es.vo.UserDetail;
-import com.example.es.vo.admin.AddMechantsReqVO;
+import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import org.springframework.http.ResponseEntity;
 
@@ -18,7 +18,7 @@ public interface UsersService extends IService<Users> {
 
     Response selectById(Long id);
 
-    Response addMerchant(AddMechantsReqVO addMechantsReqVO);
+    Response addMerchant(AddMerchantsReqVO addMerchantsReqVO);
 
     Response enableOrDisableUser(Long id, Integer status);
 
