@@ -88,13 +88,19 @@ public class Products {
     private Integer auditStatus;
 
     /**
-     *
+     * 审核备注
+     */
+    @TableField("audit_remark")
+    private String auditRemark;
+
+    /**
+     * 创建时间
      */
     @TableField("created_at")
     private LocalDateTime createdAt;
 
     /**
-     *
+     * 更新时间
      */
     @TableField("updated_at")
     private LocalDateTime updatedAt;

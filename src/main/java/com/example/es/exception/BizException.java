@@ -1,5 +1,6 @@
 package com.example.es.exception;
 
+import com.example.es.enums.ResponseCodeEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,5 +15,13 @@ public class BizException extends RuntimeException {
     public BizException(BaseExceptionInterface baseExceptionInterface) {
         this.errorCode = baseExceptionInterface.getErrorCode();
         this.errorMessage = baseExceptionInterface.getErrorMessage();
+    }
+
+    /**
+     * 使用枚举创建异常
+     */
+    public BizException(ResponseCodeEnum responseCodeEnum) {
+        this.errorCode = responseCodeEnum.getErrorCode();
+        this.errorMessage = responseCodeEnum.getErrorMessage();
     }
 }

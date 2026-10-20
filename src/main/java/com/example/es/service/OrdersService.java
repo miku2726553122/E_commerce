@@ -2,6 +2,9 @@ package com.example.es.service;
 
 import com.example.es.entity.Orders;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.example.es.utils.Response;
+import com.example.es.vo.admin.FindPageByOrdersReqVO;
+import com.example.es.vo.admin.UpdateOrderStatusReqVO;
 
 /**
 * @author 86159
@@ -10,4 +13,9 @@ import com.baomidou.mybatisplus.spring.service.IService;
 */
 public interface OrdersService extends IService<Orders> {
 
+    Response findPageByOrders(FindPageByOrdersReqVO findPageByOrdersReqVO);
+
+    Response findOrdersById(Long id);
+
+    Response updateOrderStatus(Long id, UpdateOrderStatusReqVO updateOrderStatusReqVO);
 }

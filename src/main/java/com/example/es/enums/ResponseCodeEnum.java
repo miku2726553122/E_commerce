@@ -18,6 +18,8 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     PASSWORD_SAME("1001", "密码相同"),
     UNAUTHORIZED("401", "未登录或未配置商家身份"),
     FORBIDDEN("403", "当前账号不是商家"),
+    USERNAME_PASSWORD_ERROR("1002", "用户名或密码错误"),
+
 
 
     ;

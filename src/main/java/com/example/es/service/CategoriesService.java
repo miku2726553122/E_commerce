@@ -2,6 +2,9 @@ package com.example.es.service;
 
 import com.example.es.entity.Categories;
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.example.es.utils.Response;
+import com.example.es.vo.admin.AddCategoryReqVO;
+import com.example.es.vo.admin.UpdateCategoriesReqVO;
 
 /**
 * @author 86159
@@ -10,4 +13,11 @@ import com.baomidou.mybatisplus.spring.service.IService;
 */
 public interface CategoriesService extends IService<Categories> {
 
+    Response selectAllCategories();
+
+    Response addCategory(AddCategoryReqVO addCategoryReqVO);
+
+    Response updateCategory(Long id, UpdateCategoriesReqVO updateCategoriesReqVO);
+
+    Response deleteCategory(Long id);
 }

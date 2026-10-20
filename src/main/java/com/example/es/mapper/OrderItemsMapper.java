@@ -1,7 +1,12 @@
 package com.example.es.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.example.es.entity.OrderItems;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
+
 
 /**
 * @author 86159
@@ -11,6 +16,11 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface OrderItemsMapper extends BaseMapper<OrderItems> {
 
+    default List<OrderItems> findOrderItemsById(Long id){
+        LambdaQueryWrapper<OrderItems> wrapper = Wrappers.<OrderItems>lambdaQuery()
+                .eq(OrderItems::getOrderId, id);
+        return selectList(wrapper);
+    }
 }
 
 
