@@ -21,5 +21,5 @@ public interface ProductsService extends IService<Products> {
 
     Response reviewProduct(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO);
 
-    Response updareProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO);
+    Response updateProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO);
 }

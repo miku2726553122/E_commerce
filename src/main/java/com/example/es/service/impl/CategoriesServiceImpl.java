@@ -38,9 +38,7 @@ public class CategoriesServiceImpl extends ServiceImpl<CategoriesMapper, Categor
     public Response selectAllCategories() {
         List<Categories> list = categoriesMapper.selectAllCategories();
 
-        List<FindAllCategoriesRspVO> vos = null;
-        //DO转VO
-        vos = list.stream().map(item -> FindAllCategoriesRspVO.builder()
+        List<FindAllCategoriesRspVO> vos = list.stream().map(item -> FindAllCategoriesRspVO.builder()
                 .id(item.getId())
                 .parentId(item.getParentId())
                 .categoryName(item.getCategoryName())
@@ -79,9 +77,7 @@ public class CategoriesServiceImpl extends ServiceImpl<CategoriesMapper, Categor
         // 插入数据库
         categoriesMapper.insert(category);
 
-        //实体 转 VO
-        AddCategoryRspVO vos = null;
-        vos = AddCategoryRspVO.builder()
+        AddCategoryRspVO vos = AddCategoryRspVO.builder()
                 .id(category.getId())
                 .categoryName(category.getCategoryName())
                 .status(category.getStatus())

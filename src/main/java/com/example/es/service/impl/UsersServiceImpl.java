@@ -11,7 +11,7 @@ import com.example.es.utils.JwtUtils;
 import com.example.es.utils.PasswordUtil;
 import com.example.es.utils.Response;
 import com.example.es.vo.UserDetail;
-import com.example.es.vo.admin.AddMechantsReqVO;
+import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.AddMerchantsRspVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import com.example.es.vo.admin.FindByIdRspVO;
@@ -70,19 +70,19 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
     /**
      * 添加商户
-     * @param addMechantsReqVO
+     * @param addMerchantsReqVO
      * @return
      */
     @Override
-    public Response addMerchant(AddMechantsReqVO addMechantsReqVO) {
+    public Response addMerchant(AddMerchantsReqVO addMerchantsReqVO) {
         // 加密密码
-        String encodedPassword = PasswordUtil.encode(addMechantsReqVO.getPassword());
+        String encodedPassword = PasswordUtil.encode(addMerchantsReqVO.getPassword());
 
         Users users = Users.builder()
-                .username(addMechantsReqVO.getUsername())
+                .username(addMerchantsReqVO.getUsername())
                 .passwordHash(encodedPassword)
-                .nickname(addMechantsReqVO.getNickname())
-                .shopName(addMechantsReqVO.getShopName())
+                .nickname(addMerchantsReqVO.getNickname())
+                .shopName(addMerchantsReqVO.getShopName())
                 .role("MERCHANT")
                 .status(1)
                 .build();
@@ -139,8 +139,6 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
         if (newPassword.length() < 6 || newPassword.length() > 20)
             return Response.fail(ResponseCodeEnum.PARAM_ERROR);
-
-        log.info("old password: {}", user.getPasswordHash());
 
         if (user.getPasswordHash() != null
                 && PasswordUtil.matches(newPassword, user.getPasswordHash()))

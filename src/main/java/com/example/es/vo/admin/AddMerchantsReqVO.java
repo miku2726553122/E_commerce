@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Schema(description = "添加商家请求参数")
-public class AddMechantsReqVO {
+public class AddMerchantsReqVO {
     @NotEmpty
     private String username;
 

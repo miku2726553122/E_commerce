@@ -41,7 +41,7 @@ public interface ProductsMapper extends BaseMapper<Products> {
                 .build()) > 0;
     }
 
-    default boolean updareProductShelf(Long id, Integer saleStatus){
+    default boolean updateProductShelf(Long id, Integer saleStatus){
         return updateById(Products.builder()
                 .id(id)
                 .saleStatus(saleStatus)

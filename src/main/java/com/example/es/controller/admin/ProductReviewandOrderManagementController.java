@@ -55,8 +55,8 @@ public class ProductReviewandOrderManagementController {
 
     @PutMapping("/products/{id}/status")
     @Operation(summary = "更新商品上架状态", description = "更新商品上架状态")
-    public Response updareProductShelf(@PathVariable Long id, @RequestBody FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO){
-        return productsService.updareProductShelf(id, findAndUpdateReviewProductReqVO);
+    public Response updateProductShelf(@PathVariable Long id, @RequestBody FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO){
+        return productsService.updateProductShelf(id, findAndUpdateReviewProductReqVO);
 
     }
 

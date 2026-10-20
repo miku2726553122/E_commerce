@@ -2,7 +2,7 @@ package com.example.es.controller.admin;
 
 import com.example.es.service.UsersService;
 import com.example.es.utils.Response;
-import com.example.es.vo.admin.AddMechantsReqVO;
+import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import com.example.es.vo.admin.ResetPasswordReqVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,13 +51,13 @@ public class UsersAndMerchantsController {
 
     /**
      * 添加商户
-     * @param addMechantsReqVO
+     * @param addMerchantsReqVO
      * @return
      */
-    @GetMapping("/merchants")
+    @PostMapping("/merchants")
     @Operation(summary = "添加商户", description = "添加商户")
-    public Response addmerchants(@RequestBody @Validated AddMechantsReqVO addMechantsReqVO) {
-        return usersService.addMerchant(addMechantsReqVO);
+    public Response addMerchants(@RequestBody @Validated AddMerchantsReqVO addMerchantsReqVO) {
+        return usersService.addMerchant(addMerchantsReqVO);
     }
 
     /**

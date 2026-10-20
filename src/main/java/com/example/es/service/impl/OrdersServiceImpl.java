@@ -14,7 +14,9 @@ import com.example.es.vo.admin.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +36,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
     @Autowired
     private ProductsMapper productsMapper;
-
+    
     @Override
     public Response findPageByOrders(FindPageByOrdersReqVO findPageByOrdersReqVO) {
         Page<Orders> page = ordersMapper.findPageByOrders(findPageByOrdersReqVO);
@@ -46,17 +48,32 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         Orders orders = ordersMapper.selectById(id);
 
         //订单是否存在
-        if (ordersMapper.selectById(id) == null) {
+        if (orders == null) {
             return Response.fail("订单不存在");
         }
 
         //查找订单项
         List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(id);
 
+        // 批量查询所有商品，避免 N+1 查询问题
+        List<Long> productIds = orderItems.stream()
+                .map(OrderItems::getProductId)
+                .distinct()
+                .collect(Collectors.toList());
+        
+        final Map<Long, Products> productMap;
+        if (!productIds.isEmpty()) {
+            List<Products> products = productsMapper.selectBatchIds(productIds);
+            productMap = products.stream()
+                    .collect(Collectors.toMap(Products::getId, p -> p));
+        } else {
+            productMap = new HashMap<>();
+        }
+
         //DO转VO
         List<FindOrdersItemsByIdRspVO> findOrdersItemsByIdRspVO = orderItems.stream().map(item -> {
-            // 根据每个订单项的productId查询对应的商品
-            Products products = productsMapper.selectById(item.getProductId());
+            // 从缓存中获取商品信息
+            Products products = productMap.get(item.getProductId());
             
             //商品DO转VO
             FindProductByIdRspVO findProductByIdRspVO = null;
@@ -88,9 +105,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         }).collect(Collectors.toList());
 
 
-        FindOrdersByIdRspVO vos=null;
-        //DO转VO
-        vos= FindOrdersByIdRspVO.builder()
+        FindOrdersByIdRspVO vos = FindOrdersByIdRspVO.builder()
                 .id(orders.getId())
                 .orderNo(orders.getOrderNo())
                 .userId(orders.getUserId())
