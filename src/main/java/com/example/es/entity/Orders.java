@@ -107,6 +107,12 @@ public class Orders {
     private String cancelReason;
 
     /**
+     * 管理员处理说明
+     */
+    @TableField("remark")
+    private String remark;
+
+    /**
      * 支付时间
      */
     @TableField("paid_at")
@@ -168,6 +174,7 @@ public class Orders {
             && (this.getDeliveryStatus() == null ? other.getDeliveryStatus() == null : this.getDeliveryStatus().equals(other.getDeliveryStatus()))
             && (this.getUserRemark() == null ? other.getUserRemark() == null : this.getUserRemark().equals(other.getUserRemark()))
             && (this.getCancelReason() == null ? other.getCancelReason() == null : this.getCancelReason().equals(other.getCancelReason()))
+            && (this.getRemark() == null ? other.getRemark() == null : this.getRemark().equals(other.getRemark()))
             && (this.getPaidAt() == null ? other.getPaidAt() == null : this.getPaidAt().equals(other.getPaidAt()))
             && (this.getShippedAt() == null ? other.getShippedAt() == null : this.getShippedAt().equals(other.getShippedAt()))
             && (this.getCompletedAt() == null ? other.getCompletedAt() == null : this.getCompletedAt().equals(other.getCompletedAt()))
@@ -194,6 +201,7 @@ public class Orders {
         result = prime * result + ((getDeliveryStatus() == null) ? 0 : getDeliveryStatus().hashCode());
         result = prime * result + ((getUserRemark() == null) ? 0 : getUserRemark().hashCode());
         result = prime * result + ((getCancelReason() == null) ? 0 : getCancelReason().hashCode());
+        result = prime * result + ((getRemark() == null) ? 0 : getRemark().hashCode());
         result = prime * result + ((getPaidAt() == null) ? 0 : getPaidAt().hashCode());
         result = prime * result + ((getShippedAt() == null) ? 0 : getShippedAt().hashCode());
         result = prime * result + ((getCompletedAt() == null) ? 0 : getCompletedAt().hashCode());
@@ -223,6 +231,7 @@ public class Orders {
         sb.append(", deliveryStatus=").append(deliveryStatus);
         sb.append(", userRemark=").append(userRemark);
         sb.append(", cancelReason=").append(cancelReason);
+        sb.append(", remark=").append(remark);
         sb.append(", paidAt=").append(paidAt);
         sb.append(", shippedAt=").append(shippedAt);
         sb.append(", completedAt=").append(completedAt);

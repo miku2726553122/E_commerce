@@ -10,10 +10,7 @@ import com.example.es.mapper.ProductsMapper;
 import com.example.es.service.OrdersService;
 import com.example.es.mapper.OrdersMapper;
 import com.example.es.utils.Response;
-import com.example.es.vo.admin.FindOrdersByIdRspVO;
-import com.example.es.vo.admin.FindOrdersItemsByIdRspVO;
-import com.example.es.vo.admin.FindPageByOrdersReqVO;
-import com.example.es.vo.admin.FindProductByIdRspVO;
+import com.example.es.vo.admin.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -103,6 +100,21 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
                 .build();
 
         return Response.success(vos);
+    }
+
+    /**
+     * 更新订单状态
+     */
+    @Override
+    public Response updateOrderStatus(Long id, UpdateOrderStatusReqVO updateOrderStatusReqVO) {
+        //订单是否存在
+        if (ordersMapper.selectById(id) == null) {
+            return Response.fail("订单不存在");
+        }
+
+        boolean result = ordersMapper.updateOrderStatus(id, updateOrderStatusReqVO.getOrderStatus(), updateOrderStatusReqVO.getRemark());
+
+        return result ? Response.success() : Response.fail("更新订单状态失败");
     }
 }
 

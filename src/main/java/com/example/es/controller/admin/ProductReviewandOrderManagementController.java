@@ -6,6 +6,7 @@ import com.example.es.utils.Response;
 import com.example.es.vo.admin.FindAllProductsReqVO;
 import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
 import com.example.es.vo.admin.FindPageByOrdersReqVO;
+import com.example.es.vo.admin.UpdateOrderStatusReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,9 @@ public class ProductReviewandOrderManagementController {
     }
 
 
-    public Response updateOrderStatus(){
-        return null;
+    @PutMapping("/orders/{id}/status")
+    @Operation(summary = "更新订单状态", description = "更新订单状态")
+    public Response updateOrderStatus(@PathVariable Long id, @RequestBody UpdateOrderStatusReqVO updateOrderStatusReqVO){
+        return ordersService.updateOrderStatus(id, updateOrderStatusReqVO);
     }
 }

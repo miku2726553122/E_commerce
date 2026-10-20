@@ -1,6 +1,7 @@
 package com.example.es.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.es.entity.Orders;
@@ -27,6 +28,15 @@ public interface OrdersMapper extends BaseMapper<Orders> {
                 .orderByDesc(Orders::getCreatedAt);
 
         return selectPage(page, wrapper);
+    }
+
+
+    default boolean updateOrderStatus(Long id, String orderStatus, String remark){
+        LambdaUpdateWrapper<Orders> wrapper = Wrappers.<Orders>lambdaUpdate()
+                .eq(Orders::getId, id)
+                .set(Orders::getOrderStatus, orderStatus)
+                .set(Orders::getRemark, remark);
+        return update(wrapper) > 0;
     }
 }
 
