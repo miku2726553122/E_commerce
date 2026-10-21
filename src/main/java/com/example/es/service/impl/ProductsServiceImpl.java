@@ -9,7 +9,6 @@ import com.example.es.entity.Products;
 import com.example.es.enums.ResponseCodeEnum;
 import com.example.es.mapper.ProductSkusMapper;
 import com.example.es.mapper.CategoriesMapper;
-import com.example.es.mapper.ProductSkusMapper;
 import com.example.es.service.ProductsService;
 import com.example.es.mapper.ProductsMapper;
 import com.example.es.utils.Response;
@@ -24,8 +23,6 @@ import com.example.es.vo.user.ProductDetailRspVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.es.vo.merchant.shopproduct.UpdateMerchantProductStatusReqVO;
-
-import java.util.List;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -227,9 +224,6 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
 
     @Autowired
     private ProductsMapper productsMapper;
-
-    @Autowired
-    private ProductSkusMapper productSkusMapper;
 
     @Autowired
     private ProductSkusMapper productSkusMapper;
