@@ -508,7 +508,6 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
         return Response.success(true);
     }
-}
 
     @Override
     public Response getMerchantOrders(Long merchantId) {
