@@ -40,7 +40,7 @@ class ECommerceSystemApplicationTests {
 
     @Test
     void encodePassword() {
-        String password = "oCKHA6RDfN";
+        String password = "abc1234";
         String encoded = PasswordUtil.encode(password);
         System.out.println("Encoded password: " + encoded);
     }

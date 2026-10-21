@@ -3,6 +3,7 @@ package com.example.es.controller.auth;
 import com.example.es.service.UsersService;
 import com.example.es.utils.Response;
 import com.example.es.vo.UserDetail;
+import com.example.es.vo.auth.LoginReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,8 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Login", description = "User login endpoint")
-    public Response login(@RequestBody UserDetail userDetail) {
-        return usersService.login(userDetail);
+    public Response login(@RequestBody LoginReqVO loginReqVO) {
+        return usersService.login(loginReqVO);
     }
 
     @PostMapping("/register")

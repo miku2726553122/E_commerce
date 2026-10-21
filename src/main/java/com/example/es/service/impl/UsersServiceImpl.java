@@ -12,6 +12,7 @@ import com.example.es.utils.PasswordUtil;
 import com.example.es.utils.Response;
 import com.example.es.utils.SecurityUtils;
 import com.example.es.vo.UserDetail;
+import com.example.es.vo.auth.LoginReqVO;
 import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.AddMerchantsRspVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
@@ -222,27 +223,27 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
     /**
      * 登录
-     * @param userDetail
+     * @param loginReqVO
      * @return
      */
     @Override
-    public Response login(UserDetail userDetail) {
+    public Response login(LoginReqVO loginReqVO) {
         // 1. 根据用户名查用户
-        Users user = usersMapper.findByUsername(userDetail.getUsername());
+        Users user = usersMapper.findByUsername(loginReqVO.getUsername());
         if (user == null) {
-            log.warn("登录失败：用户 [{}] 不存在", userDetail.getUsername());
+            log.warn("登录失败：用户 [{}] 不存在", loginReqVO.getUsername());
             return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
         }
 
         // 2. 账号是否启用
         if (user.getStatus() == null || user.getStatus() != 1) {
-            log.warn("登录失败：账号 [{}] 已被禁用", userDetail.getUsername());
+            log.warn("登录失败：账号 [{}] 已被禁用", loginReqVO.getUsername());
             return Response.fail(ResponseCodeEnum.ACCOUNT_DISABLED);
         }
 
         // 3. 校验密码（BCrypt 不能用 equals 直接比对密文）
-        if (!PasswordUtil.matches(userDetail.getPassword(), user.getPasswordHash())) {
-            log.warn("登录失败：用户 [{}] 密码错误", userDetail.getUsername());
+        if (!PasswordUtil.matches(loginReqVO.getPassword(), user.getPasswordHash())) {
+            log.warn("登录失败：用户 [{}] 密码错误", loginReqVO.getUsername());
             return Response.fail(ResponseCodeEnum.USERNAME_PASSWORD_ERROR);
         }
 

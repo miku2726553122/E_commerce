@@ -4,6 +4,7 @@ import com.example.es.entity.Users;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
 import com.example.es.vo.UserDetail;
+import com.example.es.vo.auth.LoginReqVO;
 import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
@@ -33,7 +34,7 @@ public interface UsersService extends IService<Users> {
 
     Response deleteUserInfo(Long id);
 
-    Response login(UserDetail userDetail);
+    Response login(LoginReqVO loginReqVO);
 
     ResponseEntity<String> register(UserDetail userDetail);
 
