@@ -1,8 +1,8 @@
 package com.example.es.controller.user;
 
-import com.example.es.auth.CurrentUserProvider;
 import com.example.es.service.OrdersService;
 import com.example.es.utils.Response;
+import com.example.es.utils.SecurityUtils;
 import com.example.es.vo.user.order.CancelOrderReqVO;
 import com.example.es.vo.user.order.CreateOrderReqVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,12 +16,9 @@ import org.springframework.web.bind.annotation.*;
 public class UserOrderController {
 
     private final OrdersService ordersService;
-    private final CurrentUserProvider currentUserProvider;
 
-    public UserOrderController(OrdersService ordersService,
-                               CurrentUserProvider currentUserProvider) {
+    public UserOrderController(OrdersService ordersService) {
         this.ordersService = ordersService;
-        this.currentUserProvider = currentUserProvider;
     }
 
     @Operation(summary = "创建订单",
@@ -29,7 +26,7 @@ public class UserOrderController {
     @PostMapping
     public Response createOrder(@Valid @RequestBody CreateOrderReqVO reqVO) {
         return ordersService.createUserOrder(
-            currentUserProvider.getUserId(),
+            SecurityUtils.getCurrentUserId(),
             reqVO
         );
     }
@@ -39,7 +36,7 @@ public class UserOrderController {
     @GetMapping
     public Response getOrders() {
         return ordersService.getUserOrders(
-            currentUserProvider.getUserId()
+            SecurityUtils.getCurrentUserId()
         );
     }
 
@@ -48,7 +45,7 @@ public class UserOrderController {
     @GetMapping("/{id}")
     public Response getOrderDetail(@PathVariable Long id) {
         return ordersService.getUserOrderDetail(
-            currentUserProvider.getUserId(),
+            SecurityUtils.getCurrentUserId(),
             id
         );
     }
@@ -60,7 +57,7 @@ public class UserOrderController {
             @PathVariable Long id,
             @Valid @RequestBody CancelOrderReqVO reqVO) {
         return ordersService.cancelUserOrder(
-            currentUserProvider.getUserId(),
+            SecurityUtils.getCurrentUserId(),
             id,
             reqVO
         );
@@ -71,7 +68,7 @@ public class UserOrderController {
     @PutMapping("/{id}/confirm")
     public Response confirmReceipt(@PathVariable Long id) {
         return ordersService.confirmReceipt(
-            currentUserProvider.getUserId(),
+            SecurityUtils.getCurrentUserId(),
             id
         );
     }

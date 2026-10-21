@@ -23,11 +23,10 @@ import com.example.es.mapper.OrdersMapper;
 import com.example.es.utils.Response;
 import com.example.es.utils.SecurityUtils;
 import com.example.es.vo.admin.*;
-import com.example.es.vo.user.CancelOrderReqVO;
-import com.example.es.vo.user.CreateOrderReqVO;
+import com.example.es.vo.user.order.CancelOrderReqVO;
+import com.example.es.vo.user.order.CreateOrderReqVO;
 import com.example.es.vo.user.CreateOrderRspVO;
 import com.example.es.vo.user.UserOrderItemRspVO;
-import com.example.es.vo.user.UserOrderPageReqVO;
 import com.example.es.vo.user.UserOrderPageRspVO;
 import com.example.es.vo.user.UserOrderRspVO;
 import com.example.es.vo.merchant.order.MerchantOrderDetailRspVO;
@@ -229,10 +228,10 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Response createOrder(CreateOrderReqVO reqVO) {
+    public Response createUserOrder(Long userId, CreateOrderReqVO reqVO) {
         // 1. 获取当前登录用户
-        Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
@@ -243,7 +242,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
         // 3. 查询收货地址
         UserAddresses address = userAddressesMapper.selectById(reqVO.getAddressId());
-        if (address == null || !address.getUserId().equals(userId)) {
+        if (address == null || !address.getUserId().equals(currentUserId)) {
             return Response.fail("收货地址不存在或无权使用");
         }
 
@@ -304,7 +303,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
         Orders order = Orders.builder()
                 .orderNo(orderNo)
-                .userId(userId)
+                .userId(currentUserId)
                 .receiverName(address.getReceiverName())
                 .receiverPhone(address.getReceiverPhone())
                 .receiverAddress(receiverAddress)
@@ -361,18 +360,17 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     }
 
     @Override
-    public Response getUserOrders(UserOrderPageReqVO reqVO) {
+    public Response getUserOrders(Long userId) {
         // 1. 获取当前登录用户
-        Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
         // 2. 分页查询订单
-        Page<Orders> page = new Page<>(reqVO.getPageNum(), reqVO.getPageSize());
+        Page<Orders> page = new Page<>(1, 10); // 默认分页参数
         LambdaQueryWrapper<Orders> wrapper = Wrappers.<Orders>lambdaQuery()
-                .eq(Orders::getUserId, userId)
-                .eq(reqVO.getOrderStatus() != null, Orders::getOrderStatus, reqVO.getOrderStatus())
+                .eq(Orders::getUserId, currentUserId)
                 .orderByDesc(Orders::getCreatedAt);
         Page<Orders> orderPage = ordersMapper.selectPage(page, wrapper);
 
@@ -395,53 +393,53 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     }
 
     @Override
-    public Response getUserOrderById(Long id) {
+    public Response getUserOrderDetail(Long userId, Long orderId) {
         // 1. 获取当前登录用户
-        Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
         // 2. 校验订单存在性及归属权
-        Response ownershipError = validateOrderOwnership(id, userId);
+        Response ownershipError = validateOrderOwnership(orderId, currentUserId);
         if (ownershipError != null) {
             return ownershipError;
         }
 
         // 3. 查询订单并构建响应
-        Orders order = ordersMapper.selectById(id);
+        Orders order = ordersMapper.selectById(orderId);
         return Response.success(toUserOrderRspVO(order));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Response cancelOrder(Long id, CancelOrderReqVO reqVO) {
+    public Response cancelUserOrder(Long userId, Long orderId, CancelOrderReqVO reqVO) {
         // 1. 获取当前登录用户
-        Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
         // 2. 校验订单存在性及归属权
-        Response ownershipError = validateOrderOwnership(id, userId);
+        Response ownershipError = validateOrderOwnership(orderId, currentUserId);
         if (ownershipError != null) {
             return ownershipError;
         }
 
         // 3. 校验订单状态（只有待付款的订单可以取消）
-        Orders order = ordersMapper.selectById(id);
+        Orders order = ordersMapper.selectById(orderId);
         if (!"待付款".equals(order.getOrderStatus())) {
             return Response.fail("只有待付款的订单可以取消");
         }
 
         // 4. 更新订单状态
         order.setOrderStatus("已取消");
-        order.setCancelReason(reqVO.getReason());
+        order.setCancelReason(reqVO.getCancelReason());
         order.setCancelledAt(LocalDateTime.now());
         ordersMapper.updateById(order);
 
         // 5. 释放锁定的库存（并行释放）
-        List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(id);
+        List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(orderId);
         List<CompletableFuture<Void>> releaseFutures = new ArrayList<>();
         for (OrderItems item : orderItems) {
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
@@ -464,21 +462,21 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Response receiveOrder(Long id) {
+    public Response confirmReceipt(Long userId, Long orderId) {
         // 1. 获取当前登录用户
-        Long userId = SecurityUtils.getCurrentUserId();
-        if (userId == null) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
         // 2. 校验订单存在性及归属权
-        Response ownershipError = validateOrderOwnership(id, userId);
+        Response ownershipError = validateOrderOwnership(orderId, currentUserId);
         if (ownershipError != null) {
             return ownershipError;
         }
 
         // 3. 校验订单状态（只有已发货的订单可以确认收货）
-        Orders order = ordersMapper.selectById(id);
+        Orders order = ordersMapper.selectById(orderId);
         if (!"已发货".equals(order.getOrderStatus())) {
             return Response.fail("只有已发货的订单可以确认收货");
         }
