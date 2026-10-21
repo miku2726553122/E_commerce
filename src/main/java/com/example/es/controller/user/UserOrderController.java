@@ -1,71 +1,78 @@
 package com.example.es.controller.user;
 
+import com.example.es.auth.CurrentUserProvider;
 import com.example.es.service.OrdersService;
 import com.example.es.utils.Response;
-import com.example.es.vo.user.CancelOrderReqVO;
-import com.example.es.vo.user.CreateOrderReqVO;
-import com.example.es.vo.user.UserOrderPageReqVO;
+import com.example.es.vo.user.order.CancelOrderReqVO;
+import com.example.es.vo.user.order.CreateOrderReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "用户-订单管理")
 @RestController
 @RequestMapping("/user/orders")
-@Tag(name = "普通用户接口", description = "用户订单相关操作")
 public class UserOrderController {
 
-    @Autowired
-    private OrdersService ordersService;
+    private final OrdersService ordersService;
+    private final CurrentUserProvider currentUserProvider;
 
-    /**
-     * 提交订单
-     */
+    public UserOrderController(OrdersService ordersService,
+                               CurrentUserProvider currentUserProvider) {
+        this.ordersService = ordersService;
+        this.currentUserProvider = currentUserProvider;
+    }
+
+    @Operation(summary = "创建订单",
+              description = "POST /user/orders")
     @PostMapping
-    @Operation(summary = "提交订单", description = "用户提交订单，角色权限：USER")
-    public Response createOrder(@RequestBody CreateOrderReqVO reqVO) {
-        return ordersService.createOrder(reqVO);
+    public Response createOrder(@Valid @RequestBody CreateOrderReqVO reqVO) {
+        return ordersService.createUserOrder(
+            currentUserProvider.getUserId(),
+            reqVO
+        );
     }
 
-    /**
-     * 查询我的订单
-     */
+    @Operation(summary = "查询订单列表",
+              description = "GET /user/orders")
     @GetMapping
-    @Operation(summary = "查询我的订单", description = "分页查询当前用户的订单列表，角色权限：USER")
-    public Response getUserOrders(UserOrderPageReqVO reqVO) {
-        return ordersService.getUserOrders(reqVO);
+    public Response getOrders() {
+        return ordersService.getUserOrders(
+            currentUserProvider.getUserId()
+        );
     }
 
-    /**
-     * 查询订单详情
-     */
+    @Operation(summary = "查询订单详情",
+              description = "GET /user/orders/{id}")
     @GetMapping("/{id}")
-    @Operation(summary = "查询订单详情", description = "查询指定订单的详细信息，角色权限：USER")
-    public Response getUserOrderById(@PathVariable Long id) {
-        return ordersService.getUserOrderById(id);
+    public Response getOrderDetail(@PathVariable Long id) {
+        return ordersService.getUserOrderDetail(
+            currentUserProvider.getUserId(),
+            id
+        );
     }
 
-    /**
-     * 取消订单
-     */
+    @Operation(summary = "取消订单",
+              description = "PUT /user/orders/{id}/cancel")
     @PutMapping("/{id}/cancel")
-    @Operation(summary = "取消订单", description = "取消待付款的订单，角色权限：USER")
-    public Response cancelOrder(@PathVariable Long id, @RequestBody CancelOrderReqVO reqVO) {
-        return ordersService.cancelOrder(id, reqVO);
+    public Response cancelOrder(
+            @PathVariable Long id,
+            @Valid @RequestBody CancelOrderReqVO reqVO) {
+        return ordersService.cancelUserOrder(
+            currentUserProvider.getUserId(),
+            id,
+            reqVO
+        );
     }
 
-    /**
-     * 确认收货
-     */
-    @PutMapping("/{id}/receive")
-    @Operation(summary = "确认收货", description = "确认已发货的订单已收货，角色权限：USER")
-    public Response receiveOrder(@PathVariable Long id) {
-        return ordersService.receiveOrder(id);
+    @Operation(summary = "确认收货",
+              description = "PUT /user/orders/{id}/confirm")
+    @PutMapping("/{id}/confirm")
+    public Response confirmReceipt(@PathVariable Long id) {
+        return ordersService.confirmReceipt(
+            currentUserProvider.getUserId(),
+            id
+        );
     }
 }

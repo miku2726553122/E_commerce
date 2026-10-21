@@ -127,5 +127,41 @@
   3. 用户已创建 `CreateProductSkuReqVO.java`（已暂存），但内容尚未确认。
 - 下一步建议：
   - 读取 `CreateProductSkuReqVO.java` 确认字段是否符合接口文档要求。
+
+### 2026-10-21 实现用户订单管理功能（4.4 用户订单部分）
+
+- 用户要求：完成 RECOVERY_PROGRESS.md 中 4.4 用户订单部分，直接实现，无需一步步引导。
+- 已完成的用户订单接口（4个）：
+  1. **POST /user/orders** - 创建订单
+     - Controller: `UserOrderController.createOrder()`
+     - Service: `OrdersService.createUserOrder()`
+     - VO: `CreateOrderReqVO`（请求参数：收货地址ID、订单项列表）
+     - 业务逻辑：从 `OrderItems` 和 `Carts` 等表读取数据并创建订单
+  2. **GET /user/orders** - 查询订单列表
+     - Controller: `UserOrderController.listOrders()`
+     - Service: `OrdersService.listUserOrders()`
+     - VO: `UserOrderRspVO`（返回：订单ID、总金额、状态、创建时间、订单项列表）
+     - 业务逻辑：根据当前用户ID查询所有订单，支持按状态筛选
+  3. **GET /user/orders/{id}** - 查询订单详情
+     - Controller: `UserOrderController.getOrderDetail()`
+     - Service: `OrdersService.getUserOrderDetail()`
+     - VO: `UserOrderDetailRspVO`（返回：完整订单信息包括订单项、收货地址等）
+     - 业务逻辑：验证订单归属权，返回详细信息
+  4. **PUT /user/orders/{id}/cancel** - 取消订单
+     - Controller: `UserOrderController.cancelOrder()`
+     - Service: `OrdersService.cancelUserOrder()`
+     - VO: `CancelOrderReqVO`（请求参数：取消原因）
+     - 业务逻辑：验证订单状态和归属权，更新状态为"已取消"
+- 技术细节：
+  - 在 `CurrentUserProvider` 中新增 `getUserId()` 方法，用于获取当前登录用户ID（与 `getMerchantId()` 和 `getAdminId()` 对应）
+  - 在 `OrdersService` 中新增 4 个用户订单相关方法的声明
+  - 在 `OrdersServiceImpl` 中实现 4 个方法的完整业务逻辑
+  - 修复了 `ProductsServiceImpl` 中重复导入 `ProductSkusMapper` 和重复声明字段的问题
+  - 修复了 `pom.xml` 中 Lombok 注解处理器路径缺少版本号的问题（导致 Lombok getter/setter 未生成）
+- 编译状态：✅ BUILD SUCCESS（`mvnw clean compile -DskipTests` 通过）
+- Git 提交：commit 7edb4c3 "feat(user): 实现用户订单管理功能"
+- 下一步建议：
+  - 测试用户订单接口（需要启动应用和配置数据库）
+  - 继续实现其他用户端接口（地址管理、购物车、商品浏览、评价等）
   - 指导用户逐步实现 SKU 的 Controller、Service 方法。
   - 在实际运行测试前，需要配置环境变量或调整 `AliOssUtils` 的初始化策略（例如使用 `@ConditionalOnProperty` 让 OSS Bean 可选）。
