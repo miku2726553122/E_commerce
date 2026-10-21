@@ -1,14 +1,13 @@
 package com.example.es.controller.merchant;
 
 import com.example.es.auth.CurrentUserProvider;
+import com.example.es.service.ProductSkusService;
 import com.example.es.service.ProductsService;
 import com.example.es.utils.Response;
-import com.example.es.vo.merchant.shopproduct.CreateMerchantProductReqVO;
-import com.example.es.vo.merchant.shopproduct.PageMerchantProductsReqVO;
-import com.example.es.vo.merchant.shopproduct.UpdateMerchantProductStatusReqVO;
-import com.example.es.vo.merchant.shopproduct.UpdateMerchantProductsReqVO;
+import com.example.es.vo.merchant.shopproduct.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -25,11 +24,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class MerchantProductController {
     private final ProductsService productsService;
     private final CurrentUserProvider currentUserProvider;
-    public MerchantProductController(ProductsService productsService
-            , CurrentUserProvider currentUserProvider) {
+    private final ProductSkusService productSkusService;
+
+    public MerchantProductController(ProductsService productsService,
+                                     CurrentUserProvider currentUserProvider,
+                                     ProductSkusService productSkusService) {
         this.productsService = productsService;
         this.currentUserProvider = currentUserProvider;
+        this.productSkusService = productSkusService;
     }
+
 
     @Operation(summary = "发布商品", description = "Post /merchant/products")
     @PostMapping
@@ -84,4 +88,40 @@ public class MerchantProductController {
         return productsService.updateMerchantProductStatus(
                 currentUserProvider.getMerchantId(), id, reqVO);
     }
+
+    @Operation(summary = "新增商品SKU",
+            description = "POST /merchant/products/{productId}/skus")
+    @PostMapping("/{productId}/skus")
+    public Response createSku(
+            @PathVariable Long productId,
+            @RequestBody @Valid CreateProductSkuReqVO reqVO) {
+
+        Long merchantId = currentUserProvider.getMerchantId();
+        return productSkusService.createProductSku(merchantId, productId, reqVO);
+    }
+
+    @Operation(summary = "修改商品SKU",
+            description = "PUT /merchant/products/{id}/skus/{skuId}")
+    @PutMapping("/{id}/skus/{skuId}")
+    public Response updateSku(
+            @PathVariable Long id,
+            @PathVariable Long skuId,
+            @RequestBody @Valid UpdateProductSkuReqVO reqVO) {
+
+        Long merchantId = currentUserProvider.getMerchantId();
+        return productSkusService.updateProductSku(merchantId, id, skuId, reqVO);
+    }
+
+    @Operation(summary = "删除商品SKU",
+            description = "DELETE /merchant/products/{id}/skus/{skuId}")
+    @DeleteMapping("/{id}/skus/{skuId}")
+    public Response deleteSku(
+            @PathVariable Long id,
+            @PathVariable Long skuId) {
+
+        Long merchantId = currentUserProvider.getMerchantId();
+        return productSkusService.deleteProductSku(merchantId, id, skuId);
+    }
+
+
 }

@@ -5,19 +5,19 @@
 <mapper namespace="com.example.es.mapper.ProductsMapper">
 
     <resultMap id="BaseResultMap" type="com.example.es.entity.Products">
-            <id property="id" column="id" />
-            <result property="merchantId" column="merchant_id" />
-            <result property="categoryId" column="category_id" />
-            <result property="productName" column="product_name" />
-            <result property="productCode" column="product_code" />
-            <result property="mainImage" column="main_image" />
-            <result property="description" column="description" />
-            <result property="detailContent" column="detail_content" />
-            <result property="basePrice" column="base_price" />
-            <result property="saleStatus" column="sale_status" />
-            <result property="auditStatus" column="audit_status" />
-            <result property="createdAt" column="created_at" />
-            <result property="updatedAt" column="updated_at" />
+        <id property="id" column="id" />
+        <result property="merchantId" column="merchant_id" />
+        <result property="categoryId" column="category_id" />
+        <result property="productName" column="product_name" />
+        <result property="productCode" column="product_code" />
+        <result property="mainImage" column="main_image" />
+        <result property="description" column="description" />
+        <result property="detailContent" column="detail_content" />
+        <result property="basePrice" column="base_price" />
+        <result property="saleStatus" column="sale_status" />
+        <result property="auditStatus" column="audit_status" />
+        <result property="createdAt" column="created_at" />
+        <result property="updatedAt" column="updated_at" />
     </resultMap>
 
     <sql id="Base_Column_List">

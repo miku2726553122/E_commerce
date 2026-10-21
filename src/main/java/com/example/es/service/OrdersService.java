@@ -18,4 +18,19 @@ public interface OrdersService extends IService<Orders> {
     Response findOrdersById(Long id);
 
     Response updateOrderStatus(Long id, UpdateOrderStatusReqVO updateOrderStatusReqVO);
+    /**
+     * 查询商家关联订单列表
+     */
+    Response getMerchantOrders(Long merchantId);
+
+    /**
+     * 查询商家订单详情
+     */
+    Response getMerchantOrderDetail(Long merchantId, Long orderId);
+
+    /**
+     * 商家确认发货
+     */
+    Response confirmShipment(Long merchantId, Long orderId);
+
 }
