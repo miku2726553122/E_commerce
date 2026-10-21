@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.es.vo.admin.AddCategoryReqVO;
 import com.example.es.vo.admin.AddCategoryRspVO;
 import com.example.es.vo.admin.FindAllCategoriesRspVO;
+import com.example.es.vo.user.FindProductCategoriesRspVO;
 
 import java.util.List;
 
@@ -23,8 +24,6 @@ public interface CategoriesMapper extends BaseMapper<Categories> {
                 .orderByDesc(Categories::getCreatedAt)
                 );
     }
-
-
 }
 
 

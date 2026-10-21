@@ -7,6 +7,8 @@ import com.example.es.vo.merchant.shopproduct.CreateMerchantProductReqVO;
 import com.example.es.utils.Response;
 import com.example.es.vo.admin.FindAllProductsReqVO;
 import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
+import com.example.es.vo.user.FindUserProductsReqVO;
+import com.example.es.vo.user.ProductDetailRspVO;
 
 /**
 * @author 86159
@@ -22,4 +24,9 @@ public interface ProductsService extends IService<Products> {
     Response reviewProduct(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO);
 
     Response updateProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO);
+
+    Response findUserProducts(FindUserProductsReqVO reqVO);
+
+    Response findProductDetail(Long id);
+
 }

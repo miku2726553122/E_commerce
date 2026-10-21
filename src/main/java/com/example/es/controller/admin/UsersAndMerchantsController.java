@@ -26,13 +26,13 @@ public class UsersAndMerchantsController {
     }
 
     /**
-     * 查询所有角色
+     * 查询所有用户（支持分页和筛选）
      *
      * @param reqVO
      * @return
      */
-    @Operation(summary = "查询所有角色", description = "查询所有角色")
-    @GetMapping("/users")
+    @Operation(summary = "查询所有用户", description = "查询所有用户，支持分页和筛选")
+    @PostMapping("/users")
     public Response selectAllRole(@RequestBody FindAllRoleReqVO reqVO) {
        return  usersService.selectAllRole(reqVO);
     }

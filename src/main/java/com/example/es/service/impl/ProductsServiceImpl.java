@@ -2,8 +2,11 @@ package com.example.es.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.example.es.entity.ProductSkus;
 import com.example.es.entity.Products;
 import com.example.es.enums.ResponseCodeEnum;
+import com.example.es.mapper.CategoriesMapper;
+import com.example.es.mapper.ProductSkusMapper;
 import com.example.es.service.ProductsService;
 import com.example.es.mapper.ProductsMapper;
 import com.example.es.utils.Response;
@@ -13,8 +16,15 @@ import com.example.es.utils.Response;
 import com.example.es.vo.admin.FindAllProductsReqVO;
 import com.example.es.vo.admin.FindAllProductsRspVO;
 import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
+import com.example.es.vo.user.FindProductCategoriesRspVO;
+import com.example.es.vo.user.FindUserProductsReqVO;
+import com.example.es.vo.user.FindUserProductsRspVO;
+import com.example.es.vo.user.ProductDetailRspVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
 * @author 86159
@@ -25,6 +35,15 @@ import org.springframework.stereotype.Service;
 public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
     implements ProductsService{
 
+    @Autowired
+    private CategoriesMapper categoriesMapper;
+
+    /**
+     * 创建商品
+     * @param merchantId
+     * @param reqVO
+     * @return
+     */
     @Override
     public Response createMerchantProduct(Long merchantId,
                                           CreateMerchantProductReqVO reqVO) {
@@ -70,6 +89,14 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
     @Autowired
     private ProductsMapper productsMapper;
 
+    @Autowired
+    private ProductSkusMapper productSkusMapper;
+
+    /**
+     * 查询商品列表
+     * @param findAllProductsReqVO
+     * @return
+     */
     @Override
     public Response findAllProducts(FindAllProductsReqVO findAllProductsReqVO) {
 
@@ -104,6 +131,12 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
         return result? Response.success():Response.fail("参数错误");
     }
 
+    /**
+     * 上下架商品
+     * @param id
+     * @param findAndUpdateReviewProductReqVO
+     * @return
+     */
     @Override
     public Response updateProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO) {
 
@@ -114,6 +147,54 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
         boolean result = productsMapper.updateProductShelf(id, findAndUpdateReviewProductReqVO.getSaleStatus());
         return result? Response.success():Response.fail("参数错误");
     }
+
+    /**
+     * 用户端分页查询商品
+     * @param reqVO
+     * @return
+     */
+    @Override
+    public Response findUserProducts(FindUserProductsReqVO reqVO) {
+        Page<Products> page = productsMapper.findUserProducts(reqVO);
+
+        FindUserProductsRspVO vos = FindUserProductsRspVO.builder()
+                .records(page.getRecords())
+                .total(page.getTotal())
+                .pageNum((int) page.getCurrent())
+                .pageSize((int) page.getSize())
+                .build();
+
+        return Response.success(vos);
+    }
+
+    /**
+     * 查询商品详情
+     * @param id
+     * @return
+     */
+    @Override
+    public Response findProductDetail(Long id) {
+        // 查询商品信息
+        Products product = productsMapper.findProductById(id);
+        if (product == null) {
+            return Response.fail("商品不存在");
+        }
+
+        // 查询SKU列表
+        List<ProductSkus> skus = productSkusMapper.findByProductId(id);
+
+        // 构建响应
+        ProductDetailRspVO vos = ProductDetailRspVO.builder()
+                .id(product.getId())
+                .productName(product.getProductName())
+                .description(product.getDescription())
+                .mainImage(product.getMainImage())
+                .skus(skus)
+                .build();
+
+        return Response.success(vos);
+    }
+
 }
 
 

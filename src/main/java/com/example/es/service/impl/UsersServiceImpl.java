@@ -10,11 +10,16 @@ import com.example.es.mapper.UsersMapper;
 import com.example.es.utils.JwtUtils;
 import com.example.es.utils.PasswordUtil;
 import com.example.es.utils.Response;
+import com.example.es.utils.SecurityUtils;
 import com.example.es.vo.UserDetail;
 import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.AddMerchantsRspVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import com.example.es.vo.admin.FindByIdRspVO;
+import com.example.es.vo.user.FindUserInfoRspVO;
+import com.example.es.vo.user.UpdatePasswordReqVO;
+import com.example.es.vo.user.UpdateUserInfoReqVO;
+import com.example.es.vo.user.UserLoginRspVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -75,6 +80,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
      */
     @Override
     public Response addMerchant(AddMerchantsReqVO addMerchantsReqVO) {
+        // 校验密码强度
+        if (!PasswordUtil.validateStrength(addMerchantsReqVO.getPassword())) {
+            return Response.fail(ResponseCodeEnum.PASSWORD_WEAK);
+        }
+
         // 加密密码
         String encodedPassword = PasswordUtil.encode(addMerchantsReqVO.getPassword());
 
@@ -137,8 +147,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         if (newPassword == null || newPassword.isEmpty())
             return Response.fail(ResponseCodeEnum.PARAM_ERROR);
 
-        if (newPassword.length() < 6 || newPassword.length() > 20)
-            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        // 校验密码强度
+        if (!PasswordUtil.validateStrength(newPassword))
+            return Response.fail(ResponseCodeEnum.PASSWORD_WEAK);
 
         if (user.getPasswordHash() != null
                 && PasswordUtil.matches(newPassword, user.getPasswordHash()))
@@ -215,29 +226,39 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
      * @return
      */
     @Override
-    public ResponseEntity<String> login(UserDetail userDetail) {
+    public Response login(UserDetail userDetail) {
         // 1. 根据用户名查用户
         Users user = usersMapper.findByUsername(userDetail.getUsername());
         if (user == null) {
             log.warn("登录失败：用户 [{}] 不存在", userDetail.getUsername());
-            return ResponseEntity.status(401).build();
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
         }
 
         // 2. 账号是否启用
         if (user.getStatus() == null || user.getStatus() != 1) {
             log.warn("登录失败：账号 [{}] 已被禁用", userDetail.getUsername());
-            return ResponseEntity.status(403).build();
+            return Response.fail(ResponseCodeEnum.ACCOUNT_DISABLED);
         }
 
         // 3. 校验密码（BCrypt 不能用 equals 直接比对密文）
         if (!PasswordUtil.matches(userDetail.getPassword(), user.getPasswordHash())) {
             log.warn("登录失败：用户 [{}] 密码错误", userDetail.getUsername());
-            return ResponseEntity.status(401).build();
+            return Response.fail(ResponseCodeEnum.USERNAME_PASSWORD_ERROR);
         }
 
         // 4. 生成 JWT
         String token = jwtUtils.generateToken(user);
-        return ResponseEntity.ok(token);
+
+        //5.查询角色
+        String role = user.getRole();
+
+        UserLoginRspVO userLoginRspVO = UserLoginRspVO.builder()
+                .token(token)
+                .userId(user.getId())
+                .role(role)
+                .build();
+
+        return Response.success(userLoginRspVO);
     }
 
     /**
@@ -248,6 +269,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
     @Override
     public ResponseEntity<String> register(UserDetail userDetail) {
         log.info("注册：{}", userDetail.getUsername());
+
+        // 校验密码强度
+        if (!PasswordUtil.validateStrength(userDetail.getPassword())) {
+            return ResponseEntity.status(400).body("密码强度不足：长度6-20位，至少包含大写字母、小写字母、数字中的两种");
+        }
 
         //1.用户是否存在
         Users user = usersMapper.findByUsername(userDetail.getUsername());
@@ -262,13 +288,89 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         Users newUser = Users.builder()
                 .username(userDetail.getUsername())
                 .passwordHash(encodedPassword)
-                .nickname(userDetail.getNickname())
-                .phone(userDetail.getPhone())
+                .nickname(userDetail.getNickname() != null ? userDetail.getNickname() : "")
+                .phone(userDetail.getPhone() != null ? userDetail.getPhone() : "")
                 .build();
         usersMapper.insert(newUser);
         //4.生成JWT
         String token = jwtUtils.generateToken(newUser);
         return ResponseEntity.ok(token);
+    }
+
+    /**
+     * 查找用户信息
+     * @return
+     */
+    @Override
+    public Response FindUserInfo() {
+        String username = SecurityUtils.getCurrentUsername();
+        //如果为空返回未登录
+        if (username == null)
+            return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
+
+        Users users = usersMapper.findByUsername(username);
+
+        // 用户不存在时返回错误提示
+        if (users == null) {
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+
+        //DO转VO
+        FindUserInfoRspVO vos = FindUserInfoRspVO.builder()
+                .id(users.getId())
+                .username(users.getUsername())
+                .nickname(users.getNickname())
+                .phone(users.getPhone())
+                .build();
+
+        return Response.success(vos);
+
+    }
+
+    /**
+     * 更新用户信息
+     * @param updateUserInfoReqVO
+     * @return
+     */
+
+    @Override
+    public Response UpdateUserInfo(UpdateUserInfoReqVO updateUserInfoReqVO) {
+        //1.获取当前用户username
+        String username = SecurityUtils.getCurrentUsername();
+        if (username == null)
+            return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
+
+        boolean result = usersMapper.updateUserInfo(updateUserInfoReqVO, username);
+
+        return Response.success(result);
+    }
+
+    @Override
+    public Response UpdatePassword(UpdatePasswordReqVO updatePasswordReqVO) {
+        String username = SecurityUtils.getCurrentUsername();
+        if (username == null)
+            return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
+
+
+        Users user = usersMapper.findByUsername(username);
+        if (user == null) {
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+        // 验证旧密码
+        if (!PasswordUtil.matches(updatePasswordReqVO.getOldPassword(), user.getPasswordHash())) {
+            return Response.fail(ResponseCodeEnum.USERNAME_PASSWORD_ERROR);
+        }
+
+        //新旧密码是否相同
+        if(updatePasswordReqVO.getNewPassword().equals(updatePasswordReqVO.getOldPassword()))
+            return Response.fail(ResponseCodeEnum.PASSWORD_SAME);
+
+        // 校验密码强度
+        if (!PasswordUtil.validateStrength(updatePasswordReqVO.getNewPassword()))
+            return Response.fail(ResponseCodeEnum.PASSWORD_WEAK);
+
+        boolean result = usersMapper.updatePassword(updatePasswordReqVO, username);
+        return Response.success(result);
     }
 }
 

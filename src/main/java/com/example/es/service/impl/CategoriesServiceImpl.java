@@ -11,6 +11,8 @@ import com.example.es.vo.admin.AddCategoryReqVO;
 import com.example.es.vo.admin.AddCategoryRspVO;
 import com.example.es.vo.admin.FindAllCategoriesRspVO;
 import com.example.es.vo.admin.UpdateCategoriesReqVO;
+import com.example.es.vo.user.FindChildrenProductCategoriesRspVO;
+import com.example.es.vo.user.FindProductCategoriesRspVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -130,6 +132,41 @@ public class CategoriesServiceImpl extends ServiceImpl<CategoriesMapper, Categor
 
         return Response.success();
     }
+
+    @Override
+    public Response findAllCategories() {
+        // 查询所有启用的分类
+        List<Categories> list = categoriesMapper.selectList(
+            new QueryWrapper<Categories>()
+                .eq("status", 1)
+                .orderByAsc("sort_order")
+                .orderByDesc("created_at")
+        );
+
+        // 构建一级分类（parentId = 0）
+        List<FindProductCategoriesRspVO> result = list.stream()
+            .filter(item -> item.getParentId() == 0)
+            .map(item -> {
+                // 查找该一级分类下的所有子分类
+                List<FindChildrenProductCategoriesRspVO> children = list.stream()
+                    .filter(child -> child.getParentId().equals(item.getId()))
+                    .map(child -> FindChildrenProductCategoriesRspVO.builder()
+                        .id(child.getId())
+                        .categoryName(child.getCategoryName())
+                        .build())
+                    .toList();
+
+                return FindProductCategoriesRspVO.builder()
+                    .id(item.getId())
+                    .categoryName(item.getCategoryName())
+                    .children(children)
+                    .build();
+            })
+            .toList();
+
+        return Response.success(result);
+    }
+
 }
 
 
