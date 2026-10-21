@@ -10,7 +10,10 @@ import com.example.es.mapper.UsersMapper;
 import com.example.es.service.UserAddressesService;
 import com.example.es.utils.Response;
 import com.example.es.utils.SecurityUtils;
+import com.example.es.vo.user.AddAddressReqVO;
+import com.example.es.vo.user.AddAddressRspVO;
 import com.example.es.vo.user.AddressRspVO;
+import com.example.es.vo.user.UpdateAddressReqVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +72,187 @@ public class UserAddressesServiceImpl extends ServiceImpl<UserAddressesMapper, U
         }
 
         return Response.success(voList);
+    }
+
+    @Override
+    public Response addAddress(AddAddressReqVO reqVO) {
+        // 1. 获取当前登录用户
+        String username = SecurityUtils.getCurrentUsername();
+        if (username == null) {
+            return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
+        }
+
+        // 2. 参数校验
+        if (reqVO.getReceiverName() == null || reqVO.getReceiverPhone() == null
+                || reqVO.getProvince() == null || reqVO.getCity() == null
+                || reqVO.getDistrict() == null || reqVO.getDetailAddress() == null) {
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        }
+
+        // 3. 根据用户名查询用户，获取 userId
+        Long userId = usersMapper.findByUsername(username).getId();
+
+        // 4. 如果设置为默认地址，先将该用户其他地址的默认标记取消
+        int isDefaultInt = (reqVO.getIsDefault() != null && reqVO.getIsDefault()) ? 1 : 0;
+        if (isDefaultInt == 1) {
+            LambdaQueryWrapper<UserAddresses> resetWrapper = Wrappers.<UserAddresses>lambdaQuery()
+                    .eq(UserAddresses::getUserId, userId)
+                    .eq(UserAddresses::getIsDefault, 1);
+            List<UserAddresses> existingDefaults = userAddressesMapper.selectList(resetWrapper);
+            for (UserAddresses addr : existingDefaults) {
+                addr.setIsDefault(0);
+                userAddressesMapper.updateById(addr);
+            }
+        }
+
+        // 5. 构建地址实体并插入
+        UserAddresses address = UserAddresses.builder()
+                .userId(userId)
+                .receiverName(reqVO.getReceiverName())
+                .receiverPhone(reqVO.getReceiverPhone())
+                .province(reqVO.getProvince())
+                .city(reqVO.getCity())
+                .district(reqVO.getDistrict())
+                .detailAddress(reqVO.getDetailAddress())
+                .isDefault(isDefaultInt)
+                .build();
+        userAddressesMapper.insert(address);
+
+        // 6. 返回结果
+        AddAddressRspVO rspVO = AddAddressRspVO.builder()
+                .id(address.getId())
+                .receiverName(address.getReceiverName())
+                .isDefault(isDefaultInt == 1)
+                .build();
+
+        return Response.success(rspVO);
+    }
+
+    @Override
+    public Response updateAddress(Long id, UpdateAddressReqVO reqVO) {
+        // 1. 获取当前登录用户
+        String username = SecurityUtils.getCurrentUsername();
+        if (username == null) {
+            return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
+        }
+
+        // 2. 查找地址
+        UserAddresses address = userAddressesMapper.selectById(id);
+        if (address == null) {
+            return Response.fail("地址不存在");
+        }
+
+        // 3. 校验是否属于当前用户
+        Long userId = usersMapper.findByUsername(username).getId();
+        if (!address.getUserId().equals(userId)) {
+            return Response.fail("无权操作该地址");
+        }
+
+        // 4. 构建更新条件，使用 LambdaUpdateWrapper 支持部分字段更新
+        com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper<UserAddresses> updateWrapper =
+                Wrappers.<UserAddresses>lambdaUpdate()
+                        .eq(UserAddresses::getId, id);
+
+        boolean needUpdate = false;
+
+        if (reqVO.getReceiverName() != null) {
+            updateWrapper.set(UserAddresses::getReceiverName, reqVO.getReceiverName());
+            needUpdate = true;
+        }
+        if (reqVO.getReceiverPhone() != null) {
+            updateWrapper.set(UserAddresses::getReceiverPhone, reqVO.getReceiverPhone());
+            needUpdate = true;
+        }
+        if (reqVO.getDetailAddress() != null) {
+            updateWrapper.set(UserAddresses::getDetailAddress, reqVO.getDetailAddress());
+            needUpdate = true;
+        }
+
+        // 处理默认地址逻辑
+        if (reqVO.getIsDefault() != null) {
+            int isDefaultInt = reqVO.getIsDefault() ? 1 : 0;
+            if (isDefaultInt == 1) {
+                // 先将该用户其他地址的默认标记取消
+                LambdaQueryWrapper<UserAddresses> resetWrapper = Wrappers.<UserAddresses>lambdaQuery()
+                        .eq(UserAddresses::getUserId, userId)
+                        .eq(UserAddresses::getIsDefault, 1);
+                List<UserAddresses> existingDefaults = userAddressesMapper.selectList(resetWrapper);
+                for (UserAddresses addr : existingDefaults) {
+                    addr.setIsDefault(0);
+                    userAddressesMapper.updateById(addr);
+                }
+            }
+            updateWrapper.set(UserAddresses::getIsDefault, isDefaultInt);
+            needUpdate = true;
+        }
+
+        if (!needUpdate) {
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        }
+
+        boolean result = userAddressesMapper.update(null, updateWrapper) > 0;
+        return Response.success(result);
+    }
+
+    @Override
+    public Response deleteAddress(Long id) {
+        // 1. 获取当前登录用户
+        String username = SecurityUtils.getCurrentUsername();
+        if (username == null) {
+            return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
+        }
+
+        // 2. 查找地址
+        UserAddresses address = userAddressesMapper.selectById(id);
+        if (address == null) {
+            return Response.fail("地址不存在");
+        }
+
+        // 3. 校验是否属于当前用户
+        Long userId = usersMapper.findByUsername(username).getId();
+        if (!address.getUserId().equals(userId)) {
+            return Response.fail("无权操作该地址");
+        }
+
+        // 4. 删除地址
+        boolean result = userAddressesMapper.deleteById(id) > 0;
+        return Response.success(result);
+    }
+
+    @Override
+    public Response setDefaultAddress(Long id) {
+        // 1. 获取当前登录用户
+        String username = SecurityUtils.getCurrentUsername();
+        if (username == null) {
+            return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
+        }
+
+        // 2. 查找地址
+        UserAddresses address = userAddressesMapper.selectById(id);
+        if (address == null) {
+            return Response.fail("地址不存在");
+        }
+
+        // 3. 校验是否属于当前用户
+        Long userId = usersMapper.findByUsername(username).getId();
+        if (!address.getUserId().equals(userId)) {
+            return Response.fail("无权操作该地址");
+        }
+
+        // 4. 先将该用户其他地址的默认标记取消
+        LambdaQueryWrapper<UserAddresses> resetWrapper = Wrappers.<UserAddresses>lambdaQuery()
+                .eq(UserAddresses::getUserId, userId)
+                .eq(UserAddresses::getIsDefault, 1);
+        List<UserAddresses> existingDefaults = userAddressesMapper.selectList(resetWrapper);
+        for (UserAddresses addr : existingDefaults) {
+            addr.setIsDefault(0);
+            userAddressesMapper.updateById(addr);
+        }
+
+        // 5. 设置当前地址为默认
+        address.setIsDefault(1);
+        boolean result = userAddressesMapper.updateById(address) > 0;
+        return Response.success(result);
     }
 }
 
