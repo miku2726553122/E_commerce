@@ -54,7 +54,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
 
         Boolean save = this.save(product);
         if (!save) {
-            return Response.success(ResponseCodeEnum.FAIL);
+            return Response.fail(ResponseCodeEnum.FAIL);
         }
 
         CreateMerchantProductRspVO rspVO = CreateMerchantProductRspVO.builder()

@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 @Builder
 @Schema(description = "修改商品")
 public class UpdateMerchantProductsReqVO {
-    private Long id;
     private String productName;
     private String description;
     private String detailContent;

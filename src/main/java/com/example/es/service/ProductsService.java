@@ -4,9 +4,11 @@ import com.example.es.entity.Products;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
 import com.example.es.vo.merchant.shopproduct.CreateMerchantProductReqVO;
-import com.example.es.utils.Response;
 import com.example.es.vo.admin.FindAllProductsReqVO;
 import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
+import com.example.es.vo.merchant.shopproduct.PageMerchantProductsReqVO;
+import com.example.es.vo.merchant.shopproduct.UpdateMerchantProductStatusReqVO;
+import com.example.es.vo.merchant.shopproduct.UpdateMerchantProductsReqVO;
 
 /**
 * @author 86159
@@ -16,6 +18,21 @@ import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
 public interface ProductsService extends IService<Products> {
     Response createMerchantProduct(Long merchantId,
                                    CreateMerchantProductReqVO reqVO);
+
+    Response pageMerchantProducts(Long merchantId,
+                                  PageMerchantProductsReqVO reqVO);
+
+    Response getMerchantProduct(Long merchantId, Long id);
+
+    Response updateMerchantProduct(Long merchantId,
+                                   Long id,
+                                   UpdateMerchantProductsReqVO reqVO);
+
+    Response deleteMerchantProduct(Long merchantId, Long id);
+
+    Response updateMerchantProductStatus(Long merchantId,
+                                         Long id,
+                                         UpdateMerchantProductStatusReqVO reqVO);
 
     Response findAllProducts(FindAllProductsReqVO findAllProductsReqVO);
 

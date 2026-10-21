@@ -13,6 +13,5 @@ import lombok.NoArgsConstructor;
 @Builder
 @Schema(description = "商品上下架")
 public class UpdateMerchantProductStatusReqVO {
-    private Long id;
     private Integer saleStatus;
 }
