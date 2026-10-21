@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.aliyun.sdk.service.oss2.utils.IOUtils;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.UUID;
 
 /**
