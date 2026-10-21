@@ -133,14 +133,35 @@ public class InventoriesServiceImpl extends ServiceImpl<InventoriesMapper, Inven
             return Response.fail("库存记录不存在");
         }
 
-        // 更新库存
-        Inventories updateInventory = Inventories.builder()
-                .id(inventory.getId())
-                .stockQuantity(reqVO.getStockQuantity())
-                .warningQuantity(reqVO.getWarningQuantity())
-                .build();
+        // 使用乐观锁重试更新
+        int maxRetries = 3;
+        int retryCount = 0;
+        boolean updated = false;
+        while (retryCount < maxRetries && !updated) {
+            // 重新查询最新版本
+            inventory = this.getById(inventory.getId());
+            if (inventory == null) {
+                return Response.fail("库存记录不存在");
+            }
+            
+            Inventories updateInventory = Inventories.builder()
+                    .id(inventory.getId())
+                    .stockQuantity(reqVO.getStockQuantity())
+                    .warningQuantity(reqVO.getWarningQuantity())
+                    .version(inventory.getVersion()) // 带上版本号
+                    .build();
 
-        boolean updated = this.updateById(updateInventory);
-        return Response.success(updated);
+            boolean success = this.updateById(updateInventory);
+            if (success) {
+                updated = true;
+            } else {
+                retryCount++;
+            }
+        }
+        
+        if (!updated) {
+            return Response.fail("更新失败，请重试");
+        }
+        return Response.success(true);
     }
 }

@@ -209,9 +209,27 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
 
         CartItems cartItem;
         if (existingItem != null) {
-            // 已存在，累加数量
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
-            cartItemsMapper.updateById(existingItem);
+            // 已存在，累加数量（使用乐观锁重试）
+            int maxRetries = 3;
+            int retryCount = 0;
+            boolean updated = false;
+            while (retryCount < maxRetries && !updated) {
+                // 重新查询最新版本
+                existingItem = cartItemsMapper.selectOne(itemWrapper);
+                if (existingItem == null) {
+                    break;
+                }
+                existingItem.setQuantity(existingItem.getQuantity() + quantity);
+                int rows = cartItemsMapper.updateById(existingItem);
+                if (rows > 0) {
+                    updated = true;
+                } else {
+                    retryCount++;
+                }
+            }
+            if (!updated) {
+                return Response.fail("操作失败，请重试");
+            }
             cartItem = existingItem;
         } else {
             // 不存在，新增明细

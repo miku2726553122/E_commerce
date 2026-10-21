@@ -411,6 +411,9 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         return Response.success(toUserOrderRspVO(order));
     }
 
+    /**
+     * 取消用户订单
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Response cancelUserOrder(Long userId, Long orderId, CancelOrderReqVO reqVO) {
@@ -427,35 +430,88 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         }
 
         // 3. 校验订单状态（只有待付款的订单可以取消）
-        Orders order = ordersMapper.selectById(orderId);
-        if (!"待付款".equals(order.getOrderStatus())) {
-            return Response.fail("只有待付款的订单可以取消");
+        // 4. 使用乐观锁更新订单状态
+        int maxOrderRetries = 3;
+        int orderRetryCount = 0;
+        boolean orderUpdated = false;
+        Orders order = null;
+        while (orderRetryCount < maxOrderRetries && !orderUpdated) {
+            // 重新查询最新版本
+            order = ordersMapper.selectById(orderId);
+            if (order == null) {
+                return Response.fail("订单不存在");
+            }
+            if (!"待付款".equals(order.getOrderStatus())) {
+                return Response.fail("只有待付款的订单可以取消");
+            }
+            
+            order.setOrderStatus("已取消");
+            order.setCancelReason(reqVO.getCancelReason());
+            order.setCancelledAt(LocalDateTime.now());
+            
+            int rows = ordersMapper.updateById(order);
+            if (rows > 0) {
+                orderUpdated = true;
+            } else {
+                orderRetryCount++;
+            }
+        }
+        
+        if (!orderUpdated) {
+            return Response.fail("取消订单失败，请重试");
         }
 
-        // 4. 更新订单状态
-        order.setOrderStatus("已取消");
-        order.setCancelReason(reqVO.getCancelReason());
-        order.setCancelledAt(LocalDateTime.now());
-        ordersMapper.updateById(order);
-
-        // 5. 释放锁定的库存（并行释放）
+        // 5. 释放锁定的库存（并行释放，使用乐观锁）
         List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(orderId);
-        List<CompletableFuture<Void>> releaseFutures = new ArrayList<>();
+        List<CompletableFuture<Boolean>> releaseFutures = new ArrayList<>();
         for (OrderItems item : orderItems) {
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                LambdaQueryWrapper<Inventories> invWrapper = Wrappers.<Inventories>lambdaQuery()
-                        .eq(Inventories::getSkuId, item.getSkuId());
-                Inventories inventory = inventoriesMapper.selectOne(invWrapper);
-                if (inventory != null) {
-                    inventory.setLockedQuantity(inventory.getLockedQuantity() - item.getQuantity());
-                    inventoriesMapper.updateById(inventory);
+            CompletableFuture<Boolean> future = CompletableFuture.supplyAsync(() -> {
+                int maxInvRetries = 3;
+                int invRetryCount = 0;
+                while (invRetryCount < maxInvRetries) {
+                    try {
+                        // 查询库存（包含版本号）
+                        LambdaQueryWrapper<Inventories> invWrapper = Wrappers.<Inventories>lambdaQuery()
+                                .eq(Inventories::getSkuId, item.getSkuId());
+                        Inventories inventory = inventoriesMapper.selectOne(invWrapper);
+                        if (inventory == null) {
+                            return false;
+                        }
+                        
+                        // 修改库存
+                        inventory.setLockedQuantity(inventory.getLockedQuantity() - item.getQuantity());
+                        
+                        // 更新（乐观锁会自动在 WHERE 条件中加入 version 校验）
+                        int invRows = inventoriesMapper.updateById(inventory);
+                        if (invRows > 0) {
+                            return true; // 更新成功
+                        }
+                        // 更新失败（版本冲突），重试
+                        invRetryCount++;
+                    } catch (Exception e) {
+                        invRetryCount++;
+                    }
                 }
+                return false; // 重试失败
             }, threadPoolTaskExecutor);
             releaseFutures.add(future);
         }
 
-        // 等待所有库存释放完成
-        CompletableFuture.allOf(releaseFutures.toArray(new CompletableFuture[0])).join();
+        // 等待所有库存释放完成并检查结果
+        boolean allSuccess = CompletableFuture.allOf(releaseFutures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> releaseFutures.stream()
+                        .allMatch(future -> {
+                            try {
+                                return future.get();
+                            } catch (Exception e) {
+                                return false;
+                            }
+                        }))
+                .join();
+
+        if (!allSuccess) {
+            throw new RuntimeException("库存释放失败，请重试");
+        }
 
         return Response.success(true);
     }
@@ -476,16 +532,36 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         }
 
         // 3. 校验订单状态（只有已发货的订单可以确认收货）
-        Orders order = ordersMapper.selectById(orderId);
-        if (!"已发货".equals(order.getOrderStatus())) {
-            return Response.fail("只有已发货的订单可以确认收货");
+        // 4. 使用乐观锁更新订单状态
+        int maxReceiptRetries = 3;
+        int receiptRetryCount = 0;
+        boolean receiptUpdated = false;
+        Orders receiptOrder = null;
+        while (receiptRetryCount < maxReceiptRetries && !receiptUpdated) {
+            // 重新查询最新版本
+            receiptOrder = ordersMapper.selectById(orderId);
+            if (receiptOrder == null) {
+                return Response.fail("订单不存在");
+            }
+            if (!"已发货".equals(receiptOrder.getOrderStatus())) {
+                return Response.fail("只有已发货的订单可以确认收货");
+            }
+            
+            receiptOrder.setOrderStatus("已完成");
+            receiptOrder.setDeliveryStatus("已签收");
+            receiptOrder.setCompletedAt(LocalDateTime.now());
+            
+            int receiptRows = ordersMapper.updateById(receiptOrder);
+            if (receiptRows > 0) {
+                receiptUpdated = true;
+            } else {
+                receiptRetryCount++;
+            }
         }
-
-        // 4. 更新订单状态
-        order.setOrderStatus("已完成");
-        order.setDeliveryStatus("已签收");
-        order.setCompletedAt(LocalDateTime.now());
-        ordersMapper.updateById(order);
+        
+        if (!receiptUpdated) {
+            return Response.fail("确认收货失败，请重试");
+        }
 
         return Response.success(true);
     }

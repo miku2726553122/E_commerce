@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.Version;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -92,6 +93,13 @@ public class Products {
      */
     @TableField("audit_remark")
     private String auditRemark;
+
+    /**
+     * 版本号（乐观锁）
+     */
+    @Version
+    @TableField("version")
+    private Integer version;
 
     /**
      * 创建时间

@@ -193,16 +193,38 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
             return Response.fail("商品不存在");
         }
 
-        Products update = Products.builder()
-                .id(id)
-                .productName(reqVO.getProductName())
-                .description(reqVO.getDescription())
-                .detailContent(reqVO.getDetailContent())
-                .basePrice(reqVO.getBasePrice())
-                .build();
+        // 使用乐观锁重试更新
+        int maxRetries = 3;
+        int retryCount = 0;
+        boolean updated = false;
+        while (retryCount < maxRetries && !updated) {
+            // 重新查询最新版本
+            product = productsMapper.selectById(id);
+            if (product == null || !merchantId.equals(product.getMerchantId())) {
+                return Response.fail("商品不存在");
+            }
+            
+            Products update = Products.builder()
+                    .id(id)
+                    .productName(reqVO.getProductName())
+                    .description(reqVO.getDescription())
+                    .detailContent(reqVO.getDetailContent())
+                    .basePrice(reqVO.getBasePrice())
+                    .version(product.getVersion()) // 带上版本号
+                    .build();
 
-        boolean updated = this.updateById(update);
-        return Response.success(updated);
+            boolean success = this.updateById(update);
+            if (success) {
+                updated = true;
+            } else {
+                retryCount++;
+            }
+        }
+        
+        if (!updated) {
+            return Response.fail("更新失败，请重试");
+        }
+        return Response.success(true);
     }
 
     @Override
