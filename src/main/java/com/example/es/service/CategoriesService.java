@@ -20,4 +20,6 @@ public interface CategoriesService extends IService<Categories> {
     Response updateCategory(Long id, UpdateCategoriesReqVO updateCategoriesReqVO);
 
     Response deleteCategory(Long id);
+
+    Response findAllCategories();
 }

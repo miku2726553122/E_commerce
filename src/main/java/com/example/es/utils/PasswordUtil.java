@@ -27,4 +27,32 @@ public class PasswordUtil {
     public static boolean matches(String rawPassword, String encodedPassword) {
         return BCrypt.checkpw(rawPassword, encodedPassword);
     }
+
+    /**
+     * 校验密码强度
+     * 规则：
+     * 1. 长度 6-20 位
+     * 2. 至少包含大写字母、小写字母、数字中的两种
+     *
+     * @param password 明文密码
+     * @return true=强度合格，false=强度不足
+     */
+    public static boolean validateStrength(String password) {
+        if (password == null || password.length() < 6 || password.length() > 20) {
+            return false;
+        }
+
+        int complexity = 0;
+        if (password.matches(".*[a-z].*")) {
+            complexity++;
+        }
+        if (password.matches(".*[A-Z].*")) {
+            complexity++;
+        }
+        if (password.matches(".*\\d.*")) {
+            complexity++;
+        }
+
+        return complexity >= 2;
+    }
 }

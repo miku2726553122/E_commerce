@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 登录接口放行
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/user/**").permitAll()
                         // Swagger / Knife4j 文档放行
                         .requestMatchers(
                                 "/doc.html",

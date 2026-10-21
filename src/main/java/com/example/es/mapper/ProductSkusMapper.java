@@ -1,7 +1,11 @@
 package com.example.es.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.example.es.entity.ProductSkus;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
 * @author 86159
@@ -11,6 +15,15 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface ProductSkusMapper extends BaseMapper<ProductSkus> {
 
+    /**
+     * 根据商品ID查询SKU列表（启用的）
+     */
+    default List<ProductSkus> findByProductId(Long productId){
+        LambdaQueryWrapper<ProductSkus> wrapper = Wrappers.<ProductSkus>lambdaQuery()
+                .eq(ProductSkus::getProductId, productId)
+                .eq(ProductSkus::getStatus, 1);
+        return selectList(wrapper);
+    }
 }
 
 

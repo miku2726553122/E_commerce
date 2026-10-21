@@ -1,11 +1,15 @@
 package com.example.es.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.es.entity.Users;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.es.utils.PasswordUtil;
+import com.example.es.vo.user.UpdatePasswordReqVO;
+import com.example.es.vo.user.UpdateUserInfoReqVO;
 
 import java.util.Objects;
 
@@ -40,6 +44,25 @@ public interface UsersMapper extends BaseMapper<Users> {
         return selectOne(wrapper);
     }
 
+    /**
+     * 根据用户名更新用户信息
+     */
+    default boolean updateUserInfo(UpdateUserInfoReqVO reqVO, String username){
+        LambdaUpdateWrapper<Users> wrapper = Wrappers.<Users>lambdaUpdate()
+                .eq(Users::getUsername, username)
+                .set(reqVO.getNickname() != null, Users::getNickname, reqVO.getNickname())
+                .set(reqVO.getRealName() != null, Users::getRealName, reqVO.getRealName())
+                .set(reqVO.getPhone() != null, Users::getPhone, reqVO.getPhone())
+                .set(reqVO.getAvatar() != null, Users::getAvatar, reqVO.getAvatar());
+        return update(wrapper) > 0;
+    }
+
+    default boolean updatePassword(UpdatePasswordReqVO updatePasswordReqVO, String username){
+        LambdaUpdateWrapper<Users> wrapper = Wrappers.<Users>lambdaUpdate()
+                .eq(Users::getUsername, username)
+                .set(Users::getPasswordHash, PasswordUtil.encode(updatePasswordReqVO.getNewPassword()));
+        return update(wrapper) > 0;
+    }
 }
 
 

@@ -19,6 +19,11 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     UNAUTHORIZED("401", "未登录或未配置商家身份"),
     FORBIDDEN("403", "当前账号不是商家"),
     USERNAME_PASSWORD_ERROR("1002", "用户名或密码错误"),
+    PASSWORD_WEAK("1003", "密码强度不足"),
+    ACCOUNT_DISABLED("1004", "账号已禁用"),
+    NOT_LOGGED_IN("1005", "未登录"),
+
+
 
 
 

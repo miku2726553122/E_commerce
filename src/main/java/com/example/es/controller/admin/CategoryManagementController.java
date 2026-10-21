@@ -46,4 +46,5 @@ public class CategoryManagementController {
     public Response deleteCategory(@PathVariable Long id){
         return categoriesService.deleteCategory(id);
     }
+
 }

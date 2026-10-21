@@ -2,6 +2,7 @@ package com.example.es.exception;
 
 import com.example.es.utils.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -52,6 +53,15 @@ public class GlobalExceptionHandler {
     public Response handleNoResourceFoundException(NoResourceFoundException e) {
         log.debug("静态资源未找到: {}", e.getResourcePath());
         return Response.fail(com.example.es.enums.ResponseCodeEnum.NOT_FOUND);
+    }
+
+    /**
+     * 处理 JSON 解析错误
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public Response handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.error("JSON 解析失败: {}", e.getMessage());
+        return Response.fail("请求参数格式错误，请检查 JSON 格式是否正确");
     }
 
     /**

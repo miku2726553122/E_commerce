@@ -1,12 +1,15 @@
 package com.example.es.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.es.entity.Products;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.es.vo.admin.FindAllProductsReqVO;
-import org.springframework.util.StringUtils;
+import com.example.es.vo.user.FindUserProductsReqVO;
+
+import java.util.Objects;
 
 /**
 * @author 86159
@@ -46,6 +49,33 @@ public interface ProductsMapper extends BaseMapper<Products> {
                 .id(id)
                 .saleStatus(saleStatus)
                 .build()) > 0;
+    }
+
+    /**
+     * 用户端分页查询商品（已上架且审核通过）
+     */
+    default Page<Products> findUserProducts(FindUserProductsReqVO reqVO){
+        Page<Products> page = new Page<>(reqVO.getPageNum(), reqVO.getPageSize());
+
+        LambdaQueryWrapper<Products> wrapper = Wrappers.<Products>lambdaQuery()
+                .eq(reqVO.getCategoryId() != null, Products::getCategoryId, reqVO.getCategoryId())
+                .like(StringUtils.isNotBlank(reqVO.getKeyword()), Products::getProductName, reqVO.getKeyword())
+                .eq(Products::getSaleStatus, 1)
+                .eq(Products::getAuditStatus, 1)
+                .orderByDesc(Products::getCreatedAt);
+
+        return selectPage(page, wrapper);
+    }
+
+    /**
+     * 根据ID查询商品详情（已上架且审核通过）
+     */
+    default Products findProductById(Long id){
+        LambdaQueryWrapper<Products> wrapper = Wrappers.<Products>lambdaQuery()
+                .eq(Products::getId, id)
+                .eq(Products::getSaleStatus, 1)
+                .eq(Products::getAuditStatus, 1);
+        return selectOne(wrapper);
     }
 }
 
