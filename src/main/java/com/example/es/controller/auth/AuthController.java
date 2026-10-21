@@ -27,5 +27,11 @@ public class AuthController {
     public ResponseEntity<String> login(@RequestBody UserDetail userDetail) {
         return usersService.login(userDetail);
     }
+
+    @PostMapping("/register")
+    @Operation(summary = "Register", description = "User register endpoint")
+    public ResponseEntity<String> register(@RequestBody UserDetail userDetail) {
+        return usersService.register(userDetail);
+    }
 }
 

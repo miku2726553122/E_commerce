@@ -6,6 +6,7 @@ import com.example.es.utils.Response;
 import com.example.es.vo.UserDetail;
 import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
+import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -24,7 +25,13 @@ public interface UsersService extends IService<Users> {
 
     Response resetPassword(Long id, String newPassword);
 
+    Response getMerchantProfile(Long merchantId);
+
+    Response updateMerchantProfile(Long merchantId, UpdateMerchantProfileReqVO reqVO);
+
     Response deleteUserInfo(Long id);
 
     ResponseEntity<String> login(UserDetail userDetail);
+
+    ResponseEntity<String> register(UserDetail userDetail);
 }

@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import com.example.es.vo.merchant.shopproduct.MerchantProfileRspVO;
+import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
 
 /**
 * @author 86159
@@ -149,6 +151,48 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         return Response.success(null);
     }
 
+    @Override
+    public Response getMerchantProfile(Long merchantId) {
+        Users user = usersMapper.selectById(merchantId);
+        if (user == null) {
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+        if (!"MERCHANT".equals(user.getRole())) {
+            return Response.fail(ResponseCodeEnum.FORBIDDEN);
+        }
+
+        MerchantProfileRspVO rspVO = MerchantProfileRspVO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .shopName(user.getShopName())
+                .shopLogo(user.getShopLogo())
+                .build();
+        return Response.success(rspVO);
+    }
+
+    @Override
+    public Response updateMerchantProfile(Long merchantId, UpdateMerchantProfileReqVO reqVO) {
+        Users user = usersMapper.selectById(merchantId);
+        if (user == null) {
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+        if (!"MERCHANT".equals(user.getRole())) {
+            return Response.fail(ResponseCodeEnum.FORBIDDEN);
+        }
+        if (reqVO == null) {
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        }
+
+        Users update = Users.builder()
+                .id(merchantId)
+                .shopName(reqVO.getShopName())
+                .shopLogo(reqVO.getShopLogo())
+                .nickname(reqVO.getNickname())
+                .build();
+        boolean updated = this.updateById(update);
+        return Response.success(updated);
+    }
+
     /**
      * 删除用户信息
      * @param id
@@ -165,6 +209,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         return Response.success();
     }
 
+    /**
+     * 登录
+     * @param userDetail
+     * @return
+     */
     @Override
     public ResponseEntity<String> login(UserDetail userDetail) {
         // 1. 根据用户名查用户
@@ -188,6 +237,37 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
         // 4. 生成 JWT
         String token = jwtUtils.generateToken(user);
+        return ResponseEntity.ok(token);
+    }
+
+    /**
+     * 注册
+     * @param userDetail
+     * @return
+     */
+    @Override
+    public ResponseEntity<String> register(UserDetail userDetail) {
+        log.info("注册：{}", userDetail.getUsername());
+
+        //1.用户是否存在
+        Users user = usersMapper.findByUsername(userDetail.getUsername());
+        if (user != null) {
+            log.warn("注册失败：用户 [{}] 已存在", userDetail.getUsername());
+            return ResponseEntity.status(400).build();
+        }
+
+        //2.密码加密
+        String encodedPassword = PasswordUtil.encode(userDetail.getPassword());
+        //3.保存用户
+        Users newUser = Users.builder()
+                .username(userDetail.getUsername())
+                .passwordHash(encodedPassword)
+                .nickname(userDetail.getNickname())
+                .phone(userDetail.getPhone())
+                .build();
+        usersMapper.insert(newUser);
+        //4.生成JWT
+        String token = jwtUtils.generateToken(newUser);
         return ResponseEntity.ok(token);
     }
 }

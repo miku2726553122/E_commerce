@@ -3,6 +3,8 @@ package com.example.es.service;
 import com.example.es.entity.Products;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
+import com.example.es.vo.merchant.shopproduct.CreateMerchantProductReqVO;
+import com.example.es.utils.Response;
 import com.example.es.vo.admin.FindAllProductsReqVO;
 import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
 
@@ -12,6 +14,8 @@ import com.example.es.vo.admin.FindAndUpdateReviewProductReqVO;
 * @createDate 2026-10-19 10:21:26
 */
 public interface ProductsService extends IService<Products> {
+    Response createMerchantProduct(Long merchantId,
+                                   CreateMerchantProductReqVO reqVO);
 
     Response findAllProducts(FindAllProductsReqVO findAllProductsReqVO);
 

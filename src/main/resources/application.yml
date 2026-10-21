@@ -2,12 +2,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/ecommerce
-    username: ${username}
+    username: ${name}
     password: ${password}
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 100MB
 
 # SpringDoc 配置
 springdoc:
@@ -17,6 +13,10 @@ springdoc:
     enabled: true
     path: /swagger-ui.html
 
+# 商家身份（临时）：登录模块完成前，用它代表当前商家
+app:
+  merchant:
+    dev-merchant-id: 3
 mybatis-plus:
   configuration:
     # 开启驼峰命名转换
