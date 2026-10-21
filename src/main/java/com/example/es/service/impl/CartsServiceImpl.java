@@ -15,7 +15,6 @@ import com.example.es.mapper.CartsMapper;
 import com.example.es.mapper.InventoriesMapper;
 import com.example.es.mapper.ProductSkusMapper;
 import com.example.es.mapper.ProductsMapper;
-import com.example.es.mapper.UsersMapper;
 import com.example.es.service.CartsService;
 import com.example.es.utils.Response;
 import com.example.es.utils.SecurityUtils;
@@ -56,9 +55,6 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
     private ProductSkusMapper productSkusMapper;
 
     @Autowired
-    private UsersMapper usersMapper;
-
-    @Autowired
     private InventoriesMapper inventoriesMapper;
 
     /**
@@ -68,15 +64,12 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
     @Override
     public Response getCart() {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
-        // 2. 根据用户名查询用户，获取 userId
-        Long userId = usersMapper.findByUsername(username).getId();
-
-        // 3. 根据 userId 查询购物车
+        // 2. 根据 userId 查询购物车
         LambdaQueryWrapper<Carts> cartWrapper = Wrappers.<Carts>lambdaQuery()
                 .eq(Carts::getUserId, userId);
         Carts cart = cartsMapper.selectOne(cartWrapper);
@@ -91,7 +84,7 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
             return Response.success(emptyCart);
         }
 
-        // 4. 查询购物车明细
+        // 3. 查询购物车明细
         LambdaQueryWrapper<CartItems> itemsWrapper = Wrappers.<CartItems>lambdaQuery()
                 .eq(CartItems::getCartId, cart.getId());
         List<CartItems> cartItems = cartItemsMapper.selectList(itemsWrapper);
@@ -105,7 +98,7 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
             return Response.success(emptyCart);
         }
 
-        // 5. 批量查询商品和 SKU 信息，构建 Map 映射（避免在 Stream lambda 中逐个查询）
+        // 4. 批量查询商品和 SKU 信息，构建 Map 映射（避免在 Stream lambda 中逐个查询）
         List<Long> productIds = cartItems.stream()
                 .map(CartItems::getProductId)
                 .distinct()
@@ -120,7 +113,7 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
         Map<Long, ProductSkus> skuMap = productSkusMapper.selectBatchIds(skuIds).stream()
                 .collect(Collectors.toMap(ProductSkus::getId, s -> s));
 
-        // 6. 组装购物车明细 VO，并计算选中商品总金额
+        // 5. 组装购物车明细 VO，并计算选中商品总金额
         List<CartItemRspVO> itemVos = new ArrayList<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -151,7 +144,7 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
             }
         }
 
-        // 7. 组装购物车 VO
+        // 6. 组装购物车 VO
         CartRspVO cartRspVO = CartRspVO.builder()
                 .id(cart.getId())
                 .items(itemVos)
@@ -167,8 +160,8 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
     @Override
     public Response addToCart(AddCartItemReqVO reqVO) {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
@@ -198,7 +191,6 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
         }
 
         // 5. 查找或创建用户购物车
-        Long userId = usersMapper.findByUsername(username).getId();
         LambdaQueryWrapper<Carts> cartWrapper = Wrappers.<Carts>lambdaQuery()
                 .eq(Carts::getUserId, userId);
         Carts cart = cartsMapper.selectOne(cartWrapper);
@@ -246,8 +238,8 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
     @Override
     public Response updateCartItem(Long id, UpdateCartItemReqVO reqVO) {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
@@ -258,7 +250,6 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
         }
 
         // 3. 校验是否属于当前用户的购物车
-        Long userId = usersMapper.findByUsername(username).getId();
         LambdaQueryWrapper<Carts> cartWrapper = Wrappers.<Carts>lambdaQuery()
                 .eq(Carts::getUserId, userId);
         Carts cart = cartsMapper.selectOne(cartWrapper);
@@ -309,8 +300,8 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
     @Override
     public Response deleteCartItem(Long id) {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
@@ -321,7 +312,6 @@ public class CartsServiceImpl extends ServiceImpl<CartsMapper, Carts>
         }
 
         // 3. 校验是否属于当前用户的购物车
-        Long userId = usersMapper.findByUsername(username).getId();
         LambdaQueryWrapper<Carts> cartWrapper = Wrappers.<Carts>lambdaQuery()
                 .eq(Carts::getUserId, userId);
         Carts cart = cartsMapper.selectOne(cartWrapper);

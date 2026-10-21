@@ -44,7 +44,7 @@ public class UsersAndMerchantsController {
      */
     @GetMapping("/users/{id}")
     @Operation(summary = "根据id获取用户信息", description = "根据id获取用户信息")
-    public Response selectById(Long id) {
+    public Response selectById(@PathVariable Long id) {
         return usersService.selectById(id);
     }
 

@@ -13,10 +13,6 @@ springdoc:
     enabled: true
     path: /swagger-ui.html
 
-# 商家身份（临时）：登录模块完成前，用它代表当前商家
-app:
-  merchant:
-    dev-merchant-id: 3
 mybatis-plus:
   configuration:
     # 开启驼峰命名转换

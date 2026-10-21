@@ -1,5 +1,6 @@
 package com.example.es.filter;
 
+import com.example.es.auth.UserPrincipal;
 import com.example.es.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -49,13 +50,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             Claims claims = jwtUtils.parseToken(token);
             String username = claims.getSubject();
+            Long userId = claims.get("userId", Long.class);
             String role = claims.get("role", String.class);
             String authority = (role == null || role.isBlank())
                     ? "ROLE_USER"
                     : (role.startsWith("ROLE_") ? role : "ROLE_" + role);
 
+            UserPrincipal principal = new UserPrincipal(userId, username);
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    username, null, AuthorityUtils.createAuthorityList(authority)
+                    principal, null, AuthorityUtils.createAuthorityList(authority)
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (JwtException | IllegalArgumentException e) {

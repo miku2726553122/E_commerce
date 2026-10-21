@@ -1,5 +1,6 @@
 package com.example.es.utils;
 
+import com.example.es.auth.UserPrincipal;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,7 +30,30 @@ public class SecurityUtils {
                 || authentication instanceof AnonymousAuthenticationToken) {
             return null;
         }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.getUsername();
+        }
         return authentication.getName();
+    }
+
+    /**
+     * 获取当前登录用户 ID
+     *
+     * @return 当前登录用户 ID；未登录时返回 null
+     */
+    public static Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.getUserId();
+        }
+        return null;
     }
 
     /**

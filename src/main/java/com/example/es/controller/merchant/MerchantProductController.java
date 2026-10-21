@@ -1,9 +1,9 @@
 package com.example.es.controller.merchant;
 
-import com.example.es.auth.CurrentUserProvider;
 import com.example.es.service.ProductSkusService;
 import com.example.es.service.ProductsService;
 import com.example.es.utils.Response;
+import com.example.es.utils.SecurityUtils;
 import com.example.es.vo.merchant.shopproduct.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,14 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/merchant/products")
 public class MerchantProductController {
     private final ProductsService productsService;
-    private final CurrentUserProvider currentUserProvider;
     private final ProductSkusService productSkusService;
 
     public MerchantProductController(ProductsService productsService,
-                                     CurrentUserProvider currentUserProvider,
                                      ProductSkusService productSkusService) {
         this.productsService = productsService;
-        this.currentUserProvider = currentUserProvider;
         this.productSkusService = productSkusService;
     }
 
@@ -40,7 +37,7 @@ public class MerchantProductController {
     public Response createProduct(
             @RequestBody CreateMerchantProductReqVO reqVO) {
 
-        Long merchantId = currentUserProvider.getMerchantId();
+        Long merchantId = SecurityUtils.getCurrentUserId();
 
         return productsService.createMerchantProduct(merchantId, reqVO);
     }
@@ -50,7 +47,7 @@ public class MerchantProductController {
     public Response pageProducts(
             @ModelAttribute PageMerchantProductsReqVO reqVO) {
         return productsService.pageMerchantProducts(
-                currentUserProvider.getMerchantId(), reqVO);
+                SecurityUtils.getCurrentUserId(), reqVO);
     }
 
     @Operation(summary = "查询自己的商品详情",
@@ -58,7 +55,7 @@ public class MerchantProductController {
     @GetMapping("/{id}")
     public Response getProduct(@PathVariable Long id) {
         return productsService.getMerchantProduct(
-                currentUserProvider.getMerchantId(), id);
+                SecurityUtils.getCurrentUserId(), id);
     }
 
     @Operation(summary = "修改商品",
@@ -68,7 +65,7 @@ public class MerchantProductController {
             @PathVariable Long id,
             @RequestBody UpdateMerchantProductsReqVO reqVO) {
         return productsService.updateMerchantProduct(
-                currentUserProvider.getMerchantId(), id, reqVO);
+                SecurityUtils.getCurrentUserId(), id, reqVO);
     }
 
     @Operation(summary = "删除商品",
@@ -76,7 +73,7 @@ public class MerchantProductController {
     @DeleteMapping("/{id}")
     public Response deleteProduct(@PathVariable Long id) {
         return productsService.deleteMerchantProduct(
-                currentUserProvider.getMerchantId(), id);
+                SecurityUtils.getCurrentUserId(), id);
     }
 
     @Operation(summary = "商品上架或下架",
@@ -86,7 +83,7 @@ public class MerchantProductController {
             @PathVariable Long id,
             @RequestBody UpdateMerchantProductStatusReqVO reqVO) {
         return productsService.updateMerchantProductStatus(
-                currentUserProvider.getMerchantId(), id, reqVO);
+                SecurityUtils.getCurrentUserId(), id, reqVO);
     }
 
     @Operation(summary = "新增商品SKU",
@@ -96,7 +93,7 @@ public class MerchantProductController {
             @PathVariable Long productId,
             @RequestBody @Valid CreateProductSkuReqVO reqVO) {
 
-        Long merchantId = currentUserProvider.getMerchantId();
+        Long merchantId = SecurityUtils.getCurrentUserId();
         return productSkusService.createProductSku(merchantId, productId, reqVO);
     }
 
@@ -108,7 +105,7 @@ public class MerchantProductController {
             @PathVariable Long skuId,
             @RequestBody @Valid UpdateProductSkuReqVO reqVO) {
 
-        Long merchantId = currentUserProvider.getMerchantId();
+        Long merchantId = SecurityUtils.getCurrentUserId();
         return productSkusService.updateProductSku(merchantId, id, skuId, reqVO);
     }
 
@@ -119,7 +116,7 @@ public class MerchantProductController {
             @PathVariable Long id,
             @PathVariable Long skuId) {
 
-        Long merchantId = currentUserProvider.getMerchantId();
+        Long merchantId = SecurityUtils.getCurrentUserId();
         return productSkusService.deleteProductSku(merchantId, id, skuId);
     }
 

@@ -2,11 +2,8 @@ package com.example.es.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
-import com.example.es.entity.CartItems;
-import com.example.es.entity.Carts;
 import com.example.es.entity.Inventories;
 import com.example.es.entity.OrderItems;
 import com.example.es.entity.Orders;
@@ -17,12 +14,10 @@ import com.example.es.enums.ResponseCodeEnum;
 import com.example.es.mapper.CartItemsMapper;
 import com.example.es.mapper.CartsMapper;
 import com.example.es.mapper.InventoriesMapper;
-import com.example.es.enums.ResponseCodeEnum;
 import com.example.es.mapper.OrderItemsMapper;
 import com.example.es.mapper.ProductSkusMapper;
 import com.example.es.mapper.ProductsMapper;
 import com.example.es.mapper.UserAddressesMapper;
-import com.example.es.mapper.UsersMapper;
 import com.example.es.service.OrdersService;
 import com.example.es.mapper.OrdersMapper;
 import com.example.es.utils.Response;
@@ -33,6 +28,7 @@ import com.example.es.vo.user.CreateOrderReqVO;
 import com.example.es.vo.user.CreateOrderRspVO;
 import com.example.es.vo.user.UserOrderItemRspVO;
 import com.example.es.vo.user.UserOrderPageReqVO;
+import com.example.es.vo.user.UserOrderPageRspVO;
 import com.example.es.vo.user.UserOrderRspVO;
 import com.example.es.vo.merchant.order.MerchantOrderDetailRspVO;
 import com.example.es.vo.merchant.order.MerchantOrderRspVO;
@@ -44,9 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -74,9 +67,6 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     private InventoriesMapper inventoriesMapper;
 
     @Autowired
-    private UsersMapper usersMapper;
-
-    @Autowired
     private UserAddressesMapper userAddressesMapper;
 
     @Autowired
@@ -87,6 +77,62 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
     @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
+    /**
+     * 校验订单存在性及归属权，失败返回错误响应
+     */
+    private Response validateOrderOwnership(Long orderId, Long userId) {
+        Orders order = ordersMapper.selectById(orderId);
+        if (order == null) {
+            return Response.fail("订单不存在");
+        }
+        if (!order.getUserId().equals(userId)) {
+            return Response.fail("无权操作该订单");
+        }
+        return null;
+    }
+
+    /**
+     * 订单项转 VO
+     */
+    private UserOrderItemRspVO toOrderItemRspVO(OrderItems item) {
+        return UserOrderItemRspVO.builder()
+                .id(item.getId())
+                .productName(item.getProductName())
+                .skuName(item.getSkuName())
+                .productImage(item.getProductImage())
+                .unitPrice(item.getUnitPrice())
+                .quantity(item.getQuantity())
+                .totalAmount(item.getTotalAmount())
+                .build();
+    }
+
+    /**
+     * 订单转用户订单 VO
+     */
+    private UserOrderRspVO toUserOrderRspVO(Orders order) {
+        List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(order.getId());
+        List<UserOrderItemRspVO> itemVos = orderItems.stream()
+                .map(this::toOrderItemRspVO)
+                .collect(Collectors.toList());
+
+        return UserOrderRspVO.builder()
+                .id(order.getId())
+                .orderNo(order.getOrderNo())
+                .receiverAddress(order.getReceiverAddress())
+                .payableAmount(order.getPayableAmount())
+                .orderStatus(order.getOrderStatus())
+                .items(itemVos)
+                .build();
+    }
+
+    /**
+     * 判断订单项是否属于指定商家
+     */
+    private boolean isMerchantProduct(OrderItems item, Long merchantId) {
+        Products product = productsMapper.selectById(item.getProductId());
+        return product != null && merchantId.equals(product.getMerchantId());
+    }
 
 
     @Override
@@ -185,8 +231,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     @Transactional(rollbackFor = Exception.class)
     public Response createOrder(CreateOrderReqVO reqVO) {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
@@ -195,10 +241,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
             return Response.fail(ResponseCodeEnum.PARAM_ERROR);
         }
 
-        // 3. 获取用户ID
-        Long userId = usersMapper.findByUsername(username).getId();
-
-        // 4. 查询收货地址
+        // 3. 查询收货地址
         UserAddresses address = userAddressesMapper.selectById(reqVO.getAddressId());
         if (address == null || !address.getUserId().equals(userId)) {
             return Response.fail("收货地址不存在或无权使用");
@@ -320,15 +363,12 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     @Override
     public Response getUserOrders(UserOrderPageReqVO reqVO) {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
-        // 2. 获取用户ID
-        Long userId = usersMapper.findByUsername(username).getId();
-
-        // 3. 分页查询订单
+        // 2. 分页查询订单
         Page<Orders> page = new Page<>(reqVO.getPageNum(), reqVO.getPageSize());
         LambdaQueryWrapper<Orders> wrapper = Wrappers.<Orders>lambdaQuery()
                 .eq(Orders::getUserId, userId)
@@ -336,39 +376,20 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
                 .orderByDesc(Orders::getCreatedAt);
         Page<Orders> orderPage = ordersMapper.selectPage(page, wrapper);
 
-        // 4. 转换为VO列表（并行查询订单项）
+        // 3. 转换为VO列表（并行查询订单项）
         List<UserOrderRspVO> voList = orderPage.getRecords().stream()
-                .map(order -> CompletableFuture.supplyAsync(() -> {
-                    // 查询订单项
-                    List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(order.getId());
-                    List<UserOrderItemRspVO> itemVos = orderItems.stream().map(item ->
-                            UserOrderItemRspVO.builder()
-                                    .id(item.getId())
-                                    .productName(item.getProductName())
-                                    .skuName(item.getSkuName())
-                                    .productImage(item.getProductImage())
-                                    .unitPrice(item.getUnitPrice())
-                                    .quantity(item.getQuantity())
-                                    .totalAmount(item.getTotalAmount())
-                                    .build()
-                    ).collect(Collectors.toList());
-
-                    return UserOrderRspVO.builder()
-                            .id(order.getId())
-                            .orderNo(order.getOrderNo())
-                            .receiverAddress(order.getReceiverAddress())
-                            .payableAmount(order.getPayableAmount())
-                            .orderStatus(order.getOrderStatus())
-                            .items(itemVos)
-                            .build();
-                }, threadPoolTaskExecutor))
+                .map(order -> CompletableFuture.supplyAsync(() ->
+                        toUserOrderRspVO(order), threadPoolTaskExecutor))
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
 
-        // 5. 构建分页结果
-        Map<String, Object> result = new HashMap<>();
-        result.put("records", voList);
-        result.put("total", orderPage.getTotal());
+        // 4. 构建分页结果
+        UserOrderPageRspVO result = UserOrderPageRspVO.builder()
+                .records(voList)
+                .total(orderPage.getTotal())
+                .pageNum((int) orderPage.getCurrent())
+                .pageSize((int) orderPage.getSize())
+                .build();
 
         return Response.success(result);
     }
@@ -376,83 +397,50 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     @Override
     public Response getUserOrderById(Long id) {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
-        // 2. 查询订单
+        // 2. 校验订单存在性及归属权
+        Response ownershipError = validateOrderOwnership(id, userId);
+        if (ownershipError != null) {
+            return ownershipError;
+        }
+
+        // 3. 查询订单并构建响应
         Orders order = ordersMapper.selectById(id);
-        if (order == null) {
-            return Response.fail("订单不存在");
-        }
-
-        // 3. 校验是否属于当前用户
-        Long userId = usersMapper.findByUsername(username).getId();
-        if (!order.getUserId().equals(userId)) {
-            return Response.fail("无权查看该订单");
-        }
-
-        // 4. 查询订单项
-        List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(id);
-        List<UserOrderItemRspVO> itemVos = orderItems.stream().map(item ->
-                UserOrderItemRspVO.builder()
-                        .id(item.getId())
-                        .productName(item.getProductName())
-                        .skuName(item.getSkuName())
-                        .productImage(item.getProductImage())
-                        .unitPrice(item.getUnitPrice())
-                        .quantity(item.getQuantity())
-                        .totalAmount(item.getTotalAmount())
-                        .build()
-        ).collect(Collectors.toList());
-
-        // 5. 构建响应
-        UserOrderRspVO vo = UserOrderRspVO.builder()
-                .id(order.getId())
-                .orderNo(order.getOrderNo())
-                .receiverAddress(order.getReceiverAddress())
-                .payableAmount(order.getPayableAmount())
-                .orderStatus(order.getOrderStatus())
-                .items(itemVos)
-                .build();
-
-        return Response.success(vo);
+        return Response.success(toUserOrderRspVO(order));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Response cancelOrder(Long id, CancelOrderReqVO reqVO) {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
-        // 2. 查询订单
+        // 2. 校验订单存在性及归属权
+        Response ownershipError = validateOrderOwnership(id, userId);
+        if (ownershipError != null) {
+            return ownershipError;
+        }
+
+        // 3. 校验订单状态（只有待付款的订单可以取消）
         Orders order = ordersMapper.selectById(id);
-        if (order == null) {
-            return Response.fail("订单不存在");
-        }
-
-        // 3. 校验是否属于当前用户
-        Long userId = usersMapper.findByUsername(username).getId();
-        if (!order.getUserId().equals(userId)) {
-            return Response.fail("无权操作该订单");
-        }
-
-        // 4. 校验订单状态（只有待付款的订单可以取消）
         if (!"待付款".equals(order.getOrderStatus())) {
             return Response.fail("只有待付款的订单可以取消");
         }
 
-        // 5. 更新订单状态
+        // 4. 更新订单状态
         order.setOrderStatus("已取消");
         order.setCancelReason(reqVO.getReason());
         order.setCancelledAt(LocalDateTime.now());
         ordersMapper.updateById(order);
 
-        // 6. 释放锁定的库存（并行释放）
+        // 5. 释放锁定的库存（并行释放）
         List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(id);
         List<CompletableFuture<Void>> releaseFutures = new ArrayList<>();
         for (OrderItems item : orderItems) {
@@ -478,29 +466,24 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     @Transactional(rollbackFor = Exception.class)
     public Response receiveOrder(Long id) {
         // 1. 获取当前登录用户
-        String username = SecurityUtils.getCurrentUsername();
-        if (username == null) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
             return Response.fail(ResponseCodeEnum.NOT_LOGGED_IN);
         }
 
-        // 2. 查询订单
+        // 2. 校验订单存在性及归属权
+        Response ownershipError = validateOrderOwnership(id, userId);
+        if (ownershipError != null) {
+            return ownershipError;
+        }
+
+        // 3. 校验订单状态（只有已发货的订单可以确认收货）
         Orders order = ordersMapper.selectById(id);
-        if (order == null) {
-            return Response.fail("订单不存在");
-        }
-
-        // 3. 校验是否属于当前用户
-        Long userId = usersMapper.findByUsername(username).getId();
-        if (!order.getUserId().equals(userId)) {
-            return Response.fail("无权操作该订单");
-        }
-
-        // 4. 校验订单状态（只有已发货的订单可以确认收货）
         if (!"已发货".equals(order.getOrderStatus())) {
             return Response.fail("只有已发货的订单可以确认收货");
         }
 
-        // 5. 更新订单状态
+        // 4. 更新订单状态
         order.setOrderStatus("已完成");
         order.setDeliveryStatus("已签收");
         order.setCompletedAt(LocalDateTime.now());
@@ -515,14 +498,22 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
             return Response.fail(ResponseCodeEnum.UNAUTHORIZED);
         }
 
-        List<OrderItems> items = orderItemsMapper.selectList(null);
+        // 1. 先查询商家的所有商品 ID
+        List<Long> merchantProductIds = productsMapper.selectList(
+                Wrappers.<Products>lambdaQuery()
+                        .eq(Products::getMerchantId, merchantId)
+                        .select(Products::getId)
+        ).stream().map(Products::getId).collect(Collectors.toList());
 
-        List<OrderItems> merchantItems = items.stream()
-                .filter(item -> {
-                    Products product = productsMapper.selectById(item.getProductId());
-                    return product != null && merchantId.equals(product.getMerchantId());
-                })
-                .collect(Collectors.toList());
+        if (merchantProductIds.isEmpty()) {
+            return Response.success(new ArrayList<>());
+        }
+
+        // 2. 只查询包含商家商品的订单项
+        List<OrderItems> merchantItems = orderItemsMapper.selectList(
+                Wrappers.<OrderItems>lambdaQuery()
+                        .in(OrderItems::getProductId, merchantProductIds)
+        );
 
         if (merchantItems.isEmpty()) {
             return Response.success(new ArrayList<>());
@@ -572,10 +563,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         );
 
         List<OrderItems> merchantItems = allItems.stream()
-                .filter(item -> {
-                    Products product = productsMapper.selectById(item.getProductId());
-                    return product != null && merchantId.equals(product.getMerchantId());
-                })
+                .filter(item -> isMerchantProduct(item, merchantId))
                 .collect(Collectors.toList());
 
         if (merchantItems.isEmpty()) {
@@ -617,19 +605,15 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         );
 
         boolean hasMerchantProduct = allItems.stream()
-                .anyMatch(item -> {
-                    Products product = productsMapper.selectById(item.getProductId());
-                    return product != null && merchantId.equals(product.getMerchantId());
-                });
+                .anyMatch(item -> isMerchantProduct(item, merchantId));
 
         if (!hasMerchantProduct) {
             return Response.fail("该订单不包含您的商品");
         }
 
-        // 检查订单状态
-        if ("3".equals(order.getOrderStatus()) ||
-                "4".equals(order.getOrderStatus())) {
-            return Response.fail("订单已完成或已取消，无法发货");
+        // 检查订单状态（只有待发货的订单才能确认发货）
+        if (!"待发货".equals(order.getOrderStatus())) {
+            return Response.fail("订单状态不正确，无法发货");
         }
 
         Orders update = Orders.builder()

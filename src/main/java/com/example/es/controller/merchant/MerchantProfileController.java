@@ -1,8 +1,8 @@
 package com.example.es.controller.merchant;
 
-import com.example.es.auth.CurrentUserProvider;
 import com.example.es.service.UsersService;
 import com.example.es.utils.Response;
+import com.example.es.utils.SecurityUtils;
 import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,23 +18,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class MerchantProfileController {
 
     private final UsersService usersService;
-    private final CurrentUserProvider currentUserProvider;
 
-    public MerchantProfileController(UsersService usersService,
-                                     CurrentUserProvider currentUserProvider) {
+    public MerchantProfileController(UsersService usersService) {
         this.usersService = usersService;
-        this.currentUserProvider = currentUserProvider;
     }
 
     @Operation(summary = "查询店铺信息", description = "GET /merchant/profile")
     @GetMapping("/profile")
     public Response getProfile() {
-        return usersService.getMerchantProfile(currentUserProvider.getMerchantId());
+        return usersService.getMerchantProfile(SecurityUtils.getCurrentUserId());
     }
 
     @Operation(summary = "修改店铺信息", description = "PUT /merchant/profile，三个字段均可选")
     @PutMapping("/profile")
     public Response updateProfile(@RequestBody UpdateMerchantProfileReqVO reqVO) {
-        return usersService.updateMerchantProfile(currentUserProvider.getMerchantId(), reqVO);
+        return usersService.updateMerchantProfile(SecurityUtils.getCurrentUserId(), reqVO);
     }
 }

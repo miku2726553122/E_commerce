@@ -1,8 +1,8 @@
 package com.example.es.controller.merchant;
 
-import com.example.es.auth.CurrentUserProvider;
 import com.example.es.service.OrdersService;
 import com.example.es.utils.Response;
+import com.example.es.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +13,9 @@ import org.springframework.web.bind.annotation.*;
 public class MerchantOrderController {
 
     private final OrdersService ordersService;
-    private final CurrentUserProvider currentUserProvider;
 
-    public MerchantOrderController(OrdersService ordersService,
-                                   CurrentUserProvider currentUserProvider) {
+    public MerchantOrderController(OrdersService ordersService) {
         this.ordersService = ordersService;
-        this.currentUserProvider = currentUserProvider;
     }
 
     @Operation(summary = "查询关联订单",
@@ -26,7 +23,7 @@ public class MerchantOrderController {
     @GetMapping
     public Response getOrders() {
         return ordersService.getMerchantOrders(
-                currentUserProvider.getMerchantId()
+                SecurityUtils.getCurrentUserId()
         );
     }
 
@@ -35,7 +32,7 @@ public class MerchantOrderController {
     @GetMapping("/{id}")
     public Response getOrderDetail(@PathVariable Long id) {
         return ordersService.getMerchantOrderDetail(
-                currentUserProvider.getMerchantId(),
+                SecurityUtils.getCurrentUserId(),
                 id
         );
     }
@@ -45,7 +42,7 @@ public class MerchantOrderController {
     @PutMapping("/{id}/ship")
     public Response confirmShipment(@PathVariable Long id) {
         return ordersService.confirmShipment(
-                currentUserProvider.getMerchantId(),
+                SecurityUtils.getCurrentUserId(),
                 id
         );
     }

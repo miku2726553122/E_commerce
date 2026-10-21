@@ -1,8 +1,8 @@
 package com.example.es.controller.merchant;
 
-import com.example.es.auth.CurrentUserProvider;
 import com.example.es.service.InventoriesService;
 import com.example.es.utils.Response;
+import com.example.es.utils.SecurityUtils;
 import com.example.es.vo.merchant.skuinventory.UpdateInventoryReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,12 +15,9 @@ import org.springframework.web.bind.annotation.*;
 public class MerchantInventoryController {
 
     private final InventoriesService inventoriesService;
-    private final CurrentUserProvider currentUserProvider;
 
-    public MerchantInventoryController(InventoriesService inventoriesService,
-                                       CurrentUserProvider currentUserProvider) {
+    public MerchantInventoryController(InventoriesService inventoriesService) {
         this.inventoriesService = inventoriesService;
-        this.currentUserProvider = currentUserProvider;
     }
 
     @Operation(summary = "查询库存列表",
@@ -28,7 +25,7 @@ public class MerchantInventoryController {
     @GetMapping
     public Response getInventories() {
         return inventoriesService.getMerchantInventories(
-                currentUserProvider.getMerchantId()
+                SecurityUtils.getCurrentUserId()
         );
     }
 
@@ -40,7 +37,7 @@ public class MerchantInventoryController {
             @RequestBody @Valid UpdateInventoryReqVO reqVO) {
 
         return inventoriesService.updateInventory(
-                currentUserProvider.getMerchantId(),
+                SecurityUtils.getCurrentUserId(),
                 skuId,
                 reqVO
         );
