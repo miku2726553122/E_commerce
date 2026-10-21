@@ -32,4 +32,6 @@ public interface UsersService extends IService<Users> {
     Response deleteUserInfo(Long id);
 
     ResponseEntity<String> login(UserDetail userDetail);
+
+    ResponseEntity<String> register(UserDetail userDetail);
 }

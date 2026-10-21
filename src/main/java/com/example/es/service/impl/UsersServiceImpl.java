@@ -209,6 +209,11 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         return Response.success();
     }
 
+    /**
+     * 登录
+     * @param userDetail
+     * @return
+     */
     @Override
     public ResponseEntity<String> login(UserDetail userDetail) {
         // 1. 根据用户名查用户
@@ -232,6 +237,37 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
         // 4. 生成 JWT
         String token = jwtUtils.generateToken(user);
+        return ResponseEntity.ok(token);
+    }
+
+    /**
+     * 注册
+     * @param userDetail
+     * @return
+     */
+    @Override
+    public ResponseEntity<String> register(UserDetail userDetail) {
+        log.info("注册：{}", userDetail.getUsername());
+
+        //1.用户是否存在
+        Users user = usersMapper.findByUsername(userDetail.getUsername());
+        if (user != null) {
+            log.warn("注册失败：用户 [{}] 已存在", userDetail.getUsername());
+            return ResponseEntity.status(400).build();
+        }
+
+        //2.密码加密
+        String encodedPassword = PasswordUtil.encode(userDetail.getPassword());
+        //3.保存用户
+        Users newUser = Users.builder()
+                .username(userDetail.getUsername())
+                .passwordHash(encodedPassword)
+                .nickname(userDetail.getNickname())
+                .phone(userDetail.getPhone())
+                .build();
+        usersMapper.insert(newUser);
+        //4.生成JWT
+        String token = jwtUtils.generateToken(newUser);
         return ResponseEntity.ok(token);
     }
 }
