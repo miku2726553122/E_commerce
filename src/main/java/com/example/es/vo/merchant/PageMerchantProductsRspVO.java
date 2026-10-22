@@ -1,4 +1,4 @@
-package com.example.es.vo.merchant.shopproduct;
+package com.example.es.vo.merchant;
 
 import com.example.es.entity.Products;
 import io.swagger.v3.oas.annotations.media.Schema;

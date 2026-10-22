@@ -4,7 +4,7 @@ import com.example.es.service.ProductSkusService;
 import com.example.es.service.ProductsService;
 import com.example.es.utils.Response;
 import com.example.es.utils.SecurityUtils;
-import com.example.es.vo.merchant.shopproduct.*;
+import com.example.es.vo.merchant.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

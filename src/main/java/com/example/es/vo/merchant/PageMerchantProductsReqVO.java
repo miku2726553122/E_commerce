@@ -1,4 +1,4 @@
-package com.example.es.vo.merchant.shopproduct;//发布商品响应
+package com.example.es.vo.merchant;//分页查询商品
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -10,10 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Schema(description = "发布商品响应")
-public class CreateMerchantProductRspVO {
-    private Long id;
-    private Long merchantId;
-    private Integer auditStatus;
+@Schema(description = "分页查询商品")
+public class PageMerchantProductsReqVO {
     private Integer saleStatus;
+    private Integer auditStatus;
+    private Integer pageNum;
+    private Integer pageSize;
+
 }

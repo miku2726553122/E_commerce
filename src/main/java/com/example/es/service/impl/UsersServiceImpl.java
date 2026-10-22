@@ -1,6 +1,5 @@
 package com.example.es.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.example.es.entity.Users;
@@ -24,10 +23,9 @@ import com.example.es.vo.user.UpdateUserInfoReqVO;
 import com.example.es.vo.user.UserLoginRspVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import com.example.es.vo.merchant.shopproduct.MerchantProfileRspVO;
-import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
+import com.example.es.vo.merchant.MerchantProfileRspVO;
+import com.example.es.vo.merchant.UpdateMerchantProfileReqVO;
 
 /**
 * @author 86159

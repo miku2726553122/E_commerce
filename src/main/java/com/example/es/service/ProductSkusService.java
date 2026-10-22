@@ -3,8 +3,8 @@ package com.example.es.service;
 import com.example.es.entity.ProductSkus;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
-import com.example.es.vo.merchant.shopproduct.CreateProductSkuReqVO;
-import com.example.es.vo.merchant.shopproduct.UpdateProductSkuReqVO;
+import com.example.es.vo.merchant.CreateProductSkuReqVO;
+import com.example.es.vo.merchant.UpdateProductSkuReqVO;
 
 
 public interface ProductSkusService extends IService<ProductSkus> {

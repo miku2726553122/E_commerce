@@ -1,4 +1,4 @@
-package com.example.es.vo.merchant.shopproduct;
+package com.example.es.vo.merchant;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;

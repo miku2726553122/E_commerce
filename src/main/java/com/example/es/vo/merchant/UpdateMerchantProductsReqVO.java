@@ -1,27 +1,21 @@
-package com.example.es.vo.merchant.shopproduct;
+package com.example.es.vo.merchant;//修改商品
 
-import com.example.es.entity.ProductSkus;
+import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Schema(description = "商家商品详情响应")
-public class MerchantProductDetailRspVO {
-
-    private Long id;
-
+@Schema(description = "修改商品")
+public class UpdateMerchantProductsReqVO {
     private String productName;
-
+    private String description;
+    private String detailContent;
     private BigDecimal basePrice;
-
-    private List<ProductSkus> skus;
 }

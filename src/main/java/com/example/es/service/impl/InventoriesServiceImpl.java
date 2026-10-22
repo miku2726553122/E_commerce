@@ -11,8 +11,8 @@ import com.example.es.mapper.ProductSkusMapper;
 import com.example.es.mapper.ProductsMapper;
 import com.example.es.service.InventoriesService;
 import com.example.es.utils.Response;
-import com.example.es.vo.merchant.skuinventory.InventoryRspVO;
-import com.example.es.vo.merchant.skuinventory.UpdateInventoryReqVO;
+import com.example.es.vo.merchant.InventoryRspVO;
+import com.example.es.vo.merchant.UpdateInventoryReqVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -3,7 +3,7 @@ package com.example.es.service;
 import com.example.es.entity.Inventories;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
-import com.example.es.vo.merchant.skuinventory.UpdateInventoryReqVO;
+import com.example.es.vo.merchant.UpdateInventoryReqVO;
 
 /**
 * @author 86159

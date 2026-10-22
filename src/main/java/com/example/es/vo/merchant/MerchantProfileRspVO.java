@@ -1,4 +1,4 @@
-package com.example.es.vo.merchant.shopproduct;//查询商家店铺资料接口返回给前端的数据。
+package com.example.es.vo.merchant;//查询商家店铺资料接口返回给前端的数据。
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

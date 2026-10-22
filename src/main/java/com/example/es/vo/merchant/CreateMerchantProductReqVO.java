@@ -1,4 +1,4 @@
-package com.example.es.vo.merchant.shopproduct;//发布商品
+package com.example.es.vo.merchant;//发布商品
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

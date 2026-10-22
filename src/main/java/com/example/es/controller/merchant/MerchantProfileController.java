@@ -3,7 +3,7 @@ package com.example.es.controller.merchant;
 import com.example.es.service.UsersService;
 import com.example.es.utils.Response;
 import com.example.es.utils.SecurityUtils;
-import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
+import com.example.es.vo.merchant.UpdateMerchantProfileReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;

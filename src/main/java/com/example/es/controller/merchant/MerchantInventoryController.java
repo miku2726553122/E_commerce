@@ -3,7 +3,7 @@ package com.example.es.controller.merchant;
 import com.example.es.service.InventoriesService;
 import com.example.es.utils.Response;
 import com.example.es.utils.SecurityUtils;
-import com.example.es.vo.merchant.skuinventory.UpdateInventoryReqVO;
+import com.example.es.vo.merchant.UpdateInventoryReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

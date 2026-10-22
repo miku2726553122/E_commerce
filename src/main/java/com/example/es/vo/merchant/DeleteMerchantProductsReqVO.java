@@ -1,4 +1,4 @@
-package com.example.es.vo.merchant.shopproduct;//删除商品
+package com.example.es.vo.merchant;//删除商品
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
