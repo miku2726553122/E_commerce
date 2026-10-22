@@ -39,9 +39,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) throws ServletException, IOException {
+        String path = request.getRequestURI();
+        String method = request.getMethod();
+        log.info("==========> {} {}", method, path);
+
         String header = request.getHeader(HEADER);
         if (header == null || !header.startsWith(PREFIX)) {
             // 未携带 token，直接放行；后续由 Security 决定是否 401
+            log.debug("[JWT] 未携带 Token, path={}", path);
             chain.doFilter(request, response);
             return;
         }
@@ -61,8 +66,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     principal, null, AuthorityUtils.createAuthorityList(authority)
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
+            log.info("[JWT] 认证成功: userId={}, username={}, role={}", userId, username, role);
         } catch (JwtException | IllegalArgumentException e) {
-            log.warn("JWT 解析失败: {}", e.getMessage());
+            log.warn("[JWT] Token 解析失败: path={}, error={}", path, e.getMessage());
             SecurityContextHolder.clearContext();
         }
 

@@ -31,6 +31,7 @@ import com.example.es.vo.user.UserOrderPageRspVO;
 import com.example.es.vo.user.UserOrderRspVO;
 import com.example.es.vo.merchant.order.MerchantOrderDetailRspVO;
 import com.example.es.vo.merchant.order.MerchantOrderRspVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -38,15 +39,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         implements OrdersService{
 
@@ -218,17 +220,17 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     }
 
     /**
-     * 生成订单编号
+     * 生成订单编号（UUID 去连字符，全局唯一）
      */
     private String generateOrderNo() {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        long random = (long) (Math.random() * 10000);
-        return "ORD" + timestamp + String.format("%04d", random);
+        return "ORD" + UUID.randomUUID().toString().replace("-", "");
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Response createUserOrder(Long userId, CreateOrderReqVO reqVO) {
+        log.info("[创建订单] 开始, userId={}, addressId={}, 商品数量={}", userId, reqVO.getAddressId(), reqVO.getItems().size());
+
         // 1. 获取当前登录用户
         Long currentUserId = SecurityUtils.getCurrentUserId();
         if (currentUserId == null) {
@@ -246,7 +248,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
             return Response.fail("收货地址不存在或无权使用");
         }
 
-        // 5. 查询SKU信息并校验库存（并行校验）
+        // 4. 查询 SKU 信息
         List<Long> skuIds = reqVO.getItems().stream()
                 .map(item -> item.getSkuId())
                 .distinct()
@@ -254,19 +256,25 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         Map<Long, ProductSkus> skuMap = productSkusMapper.selectBatchIds(skuIds).stream()
                 .collect(Collectors.toMap(ProductSkus::getId, s -> s));
 
-        // 并行校验每个SKU的库存
-        List<CompletableFuture<Response>> inventoryCheckFutures = new ArrayList<>();
+        // 5. 校验每个 SKU 的参数
         for (var item : reqVO.getItems()) {
-            CompletableFuture<Response> future = CompletableFuture.supplyAsync(() -> {
-                ProductSkus sku = skuMap.get(item.getSkuId());
-                if (sku == null) {
-                    return Response.fail("SKU不存在: " + item.getSkuId());
-                }
-                if (item.getQuantity() == null || item.getQuantity() <= 0) {
-                    return Response.fail(ResponseCodeEnum.PARAM_ERROR);
-                }
+            ProductSkus sku = skuMap.get(item.getSkuId());
+            if (sku == null) {
+                return Response.fail("SKU不存在: " + item.getSkuId());
+            }
+            if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+            }
+        }
 
-                // 查询库存
+        // 6. 锁定库存（串行，使用乐观锁重试，保证原子性）
+        log.info("[创建订单] 开始锁定库存...");
+        Map<Long, Inventories> lockedInventoryMap = new HashMap<>();
+        for (var item : reqVO.getItems()) {
+            int maxRetries = 3;
+            int retryCount = 0;
+            boolean locked = false;
+            while (retryCount < maxRetries && !locked) {
                 LambdaQueryWrapper<Inventories> invWrapper = Wrappers.<Inventories>lambdaQuery()
                         .eq(Inventories::getSkuId, item.getSkuId());
                 Inventories inventory = inventoriesMapper.selectOne(invWrapper);
@@ -275,29 +283,34 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
                 }
                 int availableStock = inventory.getStockQuantity() - inventory.getLockedQuantity();
                 if (availableStock < item.getQuantity()) {
-                    return Response.fail("库存不足: " + sku.getSkuName());
+                    return Response.fail("库存不足: " + skuMap.get(item.getSkuId()).getSkuName());
                 }
-                return Response.success();
-            }, threadPoolTaskExecutor);
-            inventoryCheckFutures.add(future);
-        }
-
-        // 等待所有库存校验完成
-        for (CompletableFuture<Response> future : inventoryCheckFutures) {
-            Response checkResult = future.join();
-            if (!checkResult.isSuccess()) {
-                return checkResult;
+                inventory.setLockedQuantity(inventory.getLockedQuantity() + item.getQuantity());
+                int rows = inventoriesMapper.updateById(inventory);
+                if (rows > 0) {
+                    locked = true;
+                    lockedInventoryMap.put(item.getSkuId(), inventory);
+                    log.debug("[创建订单] SKU {} 库存锁定成功, 数量={}", item.getSkuId(), item.getQuantity());
+                } else {
+                    retryCount++;
+                    log.warn("[创建订单] SKU {} 库存锁定冲突, 重试 {}/{}", item.getSkuId(), retryCount, maxRetries);
+                }
+            }
+            if (!locked) {
+                log.error("[创建订单] SKU {} 库存锁定失败", item.getSkuId());
+                return Response.fail("库存锁定失败，请重试");
             }
         }
+        log.info("[创建订单] 库存锁定完成");
 
-        // 6. 计算总金额
+        // 7. 计算总金额
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (var item : reqVO.getItems()) {
             ProductSkus sku = skuMap.get(item.getSkuId());
             totalAmount = totalAmount.add(sku.getSalePrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
 
-        // 7. 创建订单
+        // 8. 创建订单
         String orderNo = generateOrderNo();
         String receiverAddress = address.getProvince() + address.getCity() + address.getDistrict() + address.getDetailAddress();
 
@@ -316,14 +329,14 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
                 .userRemark(reqVO.getUserRemark())
                 .build();
         ordersMapper.insert(order);
+        log.info("[创建订单] 订单已创建: orderNo={}, 总金额={}", orderNo, totalAmount);
 
-        // 8. 创建订单项并锁定库存
+        // 9. 创建订单项
         for (var item : reqVO.getItems()) {
             ProductSkus sku = skuMap.get(item.getSkuId());
             BigDecimal unitPrice = sku.getSalePrice();
             BigDecimal itemTotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 
-            // 查询商品信息
             Products product = productsMapper.selectById(sku.getProductId());
 
             OrderItems orderItem = OrderItems.builder()
@@ -339,16 +352,10 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
                     .totalAmount(itemTotal)
                     .build();
             orderItemsMapper.insert(orderItem);
-
-            // 锁定库存
-            LambdaQueryWrapper<Inventories> invWrapper = Wrappers.<Inventories>lambdaQuery()
-                    .eq(Inventories::getSkuId, item.getSkuId());
-            Inventories inventory = inventoriesMapper.selectOne(invWrapper);
-            inventory.setLockedQuantity(inventory.getLockedQuantity() + item.getQuantity());
-            inventoriesMapper.updateById(inventory);
         }
+        log.info("[创建订单] 订单项已创建, 共 {} 项", reqVO.getItems().size());
 
-        // 9. 返回结果
+        // 10. 返回结果
         CreateOrderRspVO rspVO = CreateOrderRspVO.builder()
                 .id(order.getId())
                 .orderNo(order.getOrderNo())
@@ -356,6 +363,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
                 .orderStatus(order.getOrderStatus())
                 .build();
 
+        log.info("[创建订单] 完成, orderNo={}", orderNo);
         return Response.success(rspVO);
     }
 
@@ -417,6 +425,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Response cancelUserOrder(Long userId, Long orderId, CancelOrderReqVO reqVO) {
+        log.info("[取消订单] 开始, orderId={}, 取消原因={}", orderId, reqVO.getCancelReason());
+
         // 1. 获取当前登录用户
         Long currentUserId = SecurityUtils.getCurrentUserId();
         if (currentUserId == null) {
@@ -458,10 +468,13 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         }
         
         if (!orderUpdated) {
+            log.error("[取消订单] 订单状态更新失败, orderId={}", orderId);
             return Response.fail("取消订单失败，请重试");
         }
+        log.info("[取消订单] 订单状态已更新为已取消");
 
         // 5. 释放锁定的库存（并行释放，使用乐观锁）
+        log.info("[取消订单] 开始释放库存...");
         List<OrderItems> orderItems = orderItemsMapper.findOrderItemsById(orderId);
         List<CompletableFuture<Boolean>> releaseFutures = new ArrayList<>();
         for (OrderItems item : orderItems) {
@@ -510,15 +523,19 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
                 .join();
 
         if (!allSuccess) {
+            log.error("[取消订单] 库存释放失败, orderId={}", orderId);
             throw new RuntimeException("库存释放失败，请重试");
         }
 
+        log.info("[取消订单] 完成, orderId={}", orderId);
         return Response.success(true);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Response confirmReceipt(Long userId, Long orderId) {
+        log.info("[确认收货] 开始, orderId={}", orderId);
+
         // 1. 获取当前登录用户
         Long currentUserId = SecurityUtils.getCurrentUserId();
         if (currentUserId == null) {
@@ -560,9 +577,11 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
         }
         
         if (!receiptUpdated) {
+            log.error("[确认收货] 订单状态更新失败, orderId={}", orderId);
             return Response.fail("确认收货失败，请重试");
         }
 
+        log.info("[确认收货] 完成, orderId={}, 订单状态已更新为已完成", orderId);
         return Response.success(true);
     }
 
@@ -664,6 +683,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
 
     @Override
     public Response confirmShipment(Long merchantId, Long orderId) {
+        log.info("[确认发货] 开始, merchantId={}, orderId={}", merchantId, orderId);
+
         if (merchantId == null || orderId == null) {
             return Response.fail(ResponseCodeEnum.PARAM_ERROR);
         }
@@ -685,19 +706,42 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders>
             return Response.fail("该订单不包含您的商品");
         }
 
-        // 检查订单状态（只有待发货的订单才能确认发货）
+        // 确认发货（只有待发货的订单才能发货）
         if (!"待发货".equals(order.getOrderStatus())) {
             return Response.fail("订单状态不正确，无法发货");
         }
 
-        Orders update = Orders.builder()
-                .id(orderId)
-                .deliveryStatus("1")
-                .orderStatus("2")
-                .shippedAt(LocalDateTime.now())
-                .build();
+        // 使用乐观锁重试更新
+        int maxRetries = 3;
+        int retryCount = 0;
+        boolean updated = false;
+        while (retryCount < maxRetries && !updated) {
+            order = this.getById(orderId);
+            if (order == null) {
+                return Response.fail("订单不存在");
+            }
+            if (!"待发货".equals(order.getOrderStatus())) {
+                return Response.fail("订单状态不正确，无法发货");
+            }
 
-        boolean updated = this.updateById(update);
-        return Response.success(updated);
+            order.setOrderStatus("已发货");
+            order.setDeliveryStatus("已发货");
+            order.setShippedAt(LocalDateTime.now());
+
+            int rows = ordersMapper.updateById(order);
+            if (rows > 0) {
+                updated = true;
+            } else {
+                retryCount++;
+            }
+        }
+
+        if (!updated) {
+            log.error("[确认发货] 订单状态更新失败, orderId={}", orderId);
+            return Response.fail("确认发货失败，请重试");
+        }
+
+        log.info("[确认发货] 完成, orderId={}, 订单状态已更新为已发货", orderId);
+        return Response.success(true);
     }
 }

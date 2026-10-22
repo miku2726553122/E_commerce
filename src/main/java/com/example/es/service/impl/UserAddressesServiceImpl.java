@@ -80,6 +80,9 @@ public class UserAddressesServiceImpl extends ServiceImpl<UserAddressesMapper, U
                 .id(addr.getId())
                 .receiverName(addr.getReceiverName())
                 .receiverPhone(addr.getReceiverPhone())
+                .province(addr.getProvince())
+                .city(addr.getCity())
+                .district(addr.getDistrict())
                 .detailAddress(addr.getDetailAddress())
                 .isDefault(addr.getIsDefault() != null && addr.getIsDefault() == 1)
                 .build();

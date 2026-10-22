@@ -3,14 +3,14 @@ package com.example.es.service;
 import com.example.es.entity.Users;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.example.es.utils.Response;
-import com.example.es.vo.UserDetail;
 import com.example.es.vo.auth.LoginReqVO;
+import com.example.es.vo.auth.UserRegisterReqVO;
+import com.example.es.vo.auth.MerchantRegisterReqVO;
 import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
 import com.example.es.vo.merchant.shopproduct.UpdateMerchantProfileReqVO;
 import com.example.es.vo.user.UpdatePasswordReqVO;
 import com.example.es.vo.user.UpdateUserInfoReqVO;
-import org.springframework.http.ResponseEntity;
 
 /**
 * @author 86159
@@ -36,7 +36,15 @@ public interface UsersService extends IService<Users> {
 
     Response login(LoginReqVO loginReqVO);
 
-    ResponseEntity<String> register(UserDetail userDetail);
+    /**
+     * 用户注册（默认角色 USER）
+     */
+    Response userRegister(UserRegisterReqVO reqVO);
+
+    /**
+     * 商家注册（默认角色 MERCHANT）
+     */
+    Response merchantRegister(MerchantRegisterReqVO reqVO);
 
     Response FindUserInfo();
 

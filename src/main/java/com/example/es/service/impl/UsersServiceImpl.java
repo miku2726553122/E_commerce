@@ -11,8 +11,9 @@ import com.example.es.utils.JwtUtils;
 import com.example.es.utils.PasswordUtil;
 import com.example.es.utils.Response;
 import com.example.es.utils.SecurityUtils;
-import com.example.es.vo.UserDetail;
 import com.example.es.vo.auth.LoginReqVO;
+import com.example.es.vo.auth.UserRegisterReqVO;
+import com.example.es.vo.auth.MerchantRegisterReqVO;
 import com.example.es.vo.admin.AddMerchantsReqVO;
 import com.example.es.vo.admin.AddMerchantsRspVO;
 import com.example.es.vo.admin.FindAllRoleReqVO;
@@ -64,6 +65,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
     @Override
     public Response selectById(Long id) {
         Users users = usersMapper.selectById(id);
+        if (users == null) {
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
         FindByIdRspVO findByIdRspVO = FindByIdRspVO.builder()
                 .id(users.getId())
                 .username(users.getUsername())
@@ -81,6 +85,15 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
      */
     @Override
     public Response addMerchant(AddMerchantsReqVO addMerchantsReqVO) {
+        log.info("[添加商户] 开始, username={}", addMerchantsReqVO.getUsername());
+
+        // 校验用户名是否已存在
+        Users existUser = usersMapper.findByUsername(addMerchantsReqVO.getUsername());
+        if (existUser != null) {
+            log.warn("[添加商户] 用户名已存在: {}", addMerchantsReqVO.getUsername());
+            return Response.fail("用户名已存在");
+        }
+
         // 校验密码强度
         if (!PasswordUtil.validateStrength(addMerchantsReqVO.getPassword())) {
             return Response.fail(ResponseCodeEnum.PASSWORD_WEAK);
@@ -98,6 +111,8 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                 .status(1)
                 .build();
         usersMapper.insert(users);
+        log.info("[添加商户] 完成, merchantId={}", users.getId());
+
         AddMerchantsRspVO addMerchantsRspVO = AddMerchantsRspVO.builder()
                 .id(users.getId())
                 .username(users.getUsername())
@@ -116,10 +131,15 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
      */
     @Override
     public Response enableOrDisableUser(Long id, Integer status) {
+        log.info("[启用/禁用用户] userId={}, targetStatus={}", id, status);
 
         Users findUser = usersMapper.selectById(id);
 
-        if(findUser.getStatus().equals(status) || !(status.equals(0)||status.equals(1))){
+        if (findUser == null) {
+            return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+
+        if (findUser.getStatus().equals(status) || !(status.equals(0) || status.equals(1))) {
             return Response.fail(ResponseCodeEnum.PARAM_ERROR);
         }
 
@@ -128,6 +148,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                 .status(status)
                 .build();
         this.updateById(users);
+        log.info("[启用/禁用用户] 完成, userId={}, newStatus={}", id, status);
         return Response.success(null);
     }
 
@@ -139,6 +160,8 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
      */
     @Override
     public Response resetPassword(Long id, String newPassword) {
+        log.info("[重置密码] userId={}", id);
+
         Users user = usersMapper.selectById(id);
 
         if (user == null){
@@ -159,6 +182,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
         String encodedPassword = PasswordUtil.encode(newPassword);
         user.setPasswordHash(encodedPassword);
         usersMapper.updateById(user);
+        log.info("[重置密码] 完成, userId={}", id);
 
         return Response.success(null);
     }
@@ -228,22 +252,24 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
      */
     @Override
     public Response login(LoginReqVO loginReqVO) {
+        log.info("[登录] 开始, username={}", loginReqVO.getUsername());
+
         // 1. 根据用户名查用户
         Users user = usersMapper.findByUsername(loginReqVO.getUsername());
         if (user == null) {
-            log.warn("登录失败：用户 [{}] 不存在", loginReqVO.getUsername());
+            log.warn("[登录] 失败: 用户 [{}] 不存在", loginReqVO.getUsername());
             return Response.fail(ResponseCodeEnum.USER_NOT_FOUND);
         }
 
         // 2. 账号是否启用
         if (user.getStatus() == null || user.getStatus() != 1) {
-            log.warn("登录失败：账号 [{}] 已被禁用", loginReqVO.getUsername());
+            log.warn("[登录] 失败: 账号 [{}] 已被禁用", loginReqVO.getUsername());
             return Response.fail(ResponseCodeEnum.ACCOUNT_DISABLED);
         }
 
         // 3. 校验密码（BCrypt 不能用 equals 直接比对密文）
         if (!PasswordUtil.matches(loginReqVO.getPassword(), user.getPasswordHash())) {
-            log.warn("登录失败：用户 [{}] 密码错误", loginReqVO.getUsername());
+            log.warn("[登录] 失败: 用户 [{}] 密码错误", loginReqVO.getUsername());
             return Response.fail(ResponseCodeEnum.USERNAME_PASSWORD_ERROR);
         }
 
@@ -259,43 +285,100 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                 .role(role)
                 .build();
 
+        log.info("[登录] 成功: userId={}, username={}, role={}", user.getId(), user.getUsername(), role);
         return Response.success(userLoginRspVO);
     }
 
     /**
-     * 注册
-     * @param userDetail
-     * @return
+     * 用户注册（默认角色 USER）
      */
     @Override
-    public ResponseEntity<String> register(UserDetail userDetail) {
-        log.info("注册：{}", userDetail.getUsername());
+    public Response userRegister(UserRegisterReqVO reqVO) {
+        log.info("[用户注册] 开始, username={}", reqVO.getUsername());
+
+        // 校验用户名是否已存在
+        Users existUser = usersMapper.findByUsername(reqVO.getUsername());
+        if (existUser != null) {
+            log.warn("[用户注册] 失败: 用户 [{}] 已存在", reqVO.getUsername());
+            return Response.fail("用户名已存在");
+        }
 
         // 校验密码强度
-        if (!PasswordUtil.validateStrength(userDetail.getPassword())) {
-            return ResponseEntity.status(400).body("密码强度不足：长度6-20位，至少包含大写字母、小写字母、数字中的两种");
+        if (!PasswordUtil.validateStrength(reqVO.getPassword())) {
+            return Response.fail(ResponseCodeEnum.PASSWORD_WEAK);
         }
 
-        //1.用户是否存在
-        Users user = usersMapper.findByUsername(userDetail.getUsername());
-        if (user != null) {
-            log.warn("注册失败：用户 [{}] 已存在", userDetail.getUsername());
-            return ResponseEntity.status(400).build();
-        }
-
-        //2.密码加密
-        String encodedPassword = PasswordUtil.encode(userDetail.getPassword());
-        //3.保存用户
+        // 密码加密
+        String encodedPassword = PasswordUtil.encode(reqVO.getPassword());
+        // 保存用户
         Users newUser = Users.builder()
-                .username(userDetail.getUsername())
+                .username(reqVO.getUsername())
                 .passwordHash(encodedPassword)
-                .nickname(userDetail.getNickname() != null ? userDetail.getNickname() : "")
-                .phone(userDetail.getPhone() != null ? userDetail.getPhone() : "")
+                .nickname(reqVO.getNickname() != null ? reqVO.getNickname() : "")
+                .phone(reqVO.getPhone() != null ? reqVO.getPhone() : "")
+                .role("USER")
+                .status(1)
                 .build();
         usersMapper.insert(newUser);
-        //4.生成JWT
+        log.info("[用户注册] 用户已创建: userId={}", newUser.getId());
+
+        // 生成 JWT
         String token = jwtUtils.generateToken(newUser);
-        return ResponseEntity.ok(token);
+
+        UserLoginRspVO rspVO = UserLoginRspVO.builder()
+                .token(token)
+                .userId(newUser.getId())
+                .role("USER")
+                .build();
+
+        log.info("[用户注册] 完成: userId={}, role=USER", newUser.getId());
+        return Response.success(rspVO);
+    }
+
+    /**
+     * 商家注册（默认角色 MERCHANT）
+     */
+    @Override
+    public Response merchantRegister(MerchantRegisterReqVO reqVO) {
+        log.info("[商家注册] 开始, username={}, shopName={}", reqVO.getUsername(), reqVO.getShopName());
+
+        // 校验用户名是否已存在
+        Users existUser = usersMapper.findByUsername(reqVO.getUsername());
+        if (existUser != null) {
+            log.warn("[商家注册] 失败: 用户 [{}] 已存在", reqVO.getUsername());
+            return Response.fail("用户名已存在");
+        }
+
+        // 校验密码强度
+        if (!PasswordUtil.validateStrength(reqVO.getPassword())) {
+            return Response.fail(ResponseCodeEnum.PASSWORD_WEAK);
+        }
+
+        // 密码加密
+        String encodedPassword = PasswordUtil.encode(reqVO.getPassword());
+        // 保存商家
+        Users newUser = Users.builder()
+                .username(reqVO.getUsername())
+                .passwordHash(encodedPassword)
+                .nickname(reqVO.getNickname() != null ? reqVO.getNickname() : "")
+                .shopName(reqVO.getShopName())
+                .role("MERCHANT")
+                .status(1)
+                .build();
+        usersMapper.insert(newUser);
+        log.info("[商家注册] 商家已创建: merchantId={}", newUser.getId());
+
+        // 生成 JWT
+        String token = jwtUtils.generateToken(newUser);
+
+        UserLoginRspVO rspVO = UserLoginRspVO.builder()
+                .token(token)
+                .userId(newUser.getId())
+                .role("MERCHANT")
+                .build();
+
+        log.info("[商家注册] 完成: merchantId={}, role=MERCHANT", newUser.getId());
+        return Response.success(rspVO);
     }
 
     /**

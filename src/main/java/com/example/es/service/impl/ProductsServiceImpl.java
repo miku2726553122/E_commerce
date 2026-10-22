@@ -334,14 +334,34 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
             return Response.fail("商品尚未审核通过，不能上架");
         }
 
-        // 4. 只修改销售状态，不修改商品其他字段
-        Products update = Products.builder()
-                .id(id)
-                .saleStatus(reqVO.getSaleStatus())
-                .build();
+        // 4. 使用乐观锁重试更新上架/下架状态
+        int maxRetries = 3;
+        int retryCount = 0;
+        boolean updated = false;
+        while (retryCount < maxRetries && !updated) {
+            product = productsMapper.selectById(id);
+            if (product == null || !merchantId.equals(product.getMerchantId())) {
+                return Response.fail("商品不存在");
+            }
 
-        boolean updated = this.updateById(update);
-        return Response.success(updated);
+            Products update = Products.builder()
+                    .id(id)
+                    .saleStatus(reqVO.getSaleStatus())
+                    .version(product.getVersion())
+                    .build();
+
+            boolean success = this.updateById(update);
+            if (success) {
+                updated = true;
+            } else {
+                retryCount++;
+            }
+        }
+
+        if (!updated) {
+            return Response.fail("更新失败，请重试");
+        }
+        return Response.success(true);
     }
 
     /**

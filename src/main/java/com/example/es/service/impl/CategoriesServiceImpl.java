@@ -3,8 +3,10 @@ package com.example.es.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.example.es.entity.Categories;
+import com.example.es.entity.Products;
 import com.example.es.service.CategoriesService;
 import com.example.es.mapper.CategoriesMapper;
+import com.example.es.mapper.ProductsMapper;
 import com.example.es.utils.AliOssUtils;
 import com.example.es.utils.Response;
 import com.example.es.vo.admin.AddCategoryReqVO;
@@ -32,6 +34,9 @@ public class CategoriesServiceImpl extends ServiceImpl<CategoriesMapper, Categor
 
     @Autowired
     private CategoriesMapper categoriesMapper;
+
+    @Autowired
+    private ProductsMapper productsMapper;
 
     @Autowired
     private AliOssUtils aliOssUtils;
@@ -124,8 +129,14 @@ public class CategoriesServiceImpl extends ServiceImpl<CategoriesMapper, Categor
         List<Categories> categoriesList = categoriesMapper.selectList(new QueryWrapper<Categories>()
                 .eq("parent_id", id));
         if (categoriesList != null && !categoriesList.isEmpty()) {
-            // 有子分类，不允许删除
             return Response.fail("分类下有子分类，不允许删除");
+        }
+
+        // 判断分类下是否有商品
+        long productCount = productsMapper.selectCount(new QueryWrapper<Products>()
+                .eq("category_id", id));
+        if (productCount > 0) {
+            return Response.fail("分类下有商品，不允许删除");
         }
 
         categoriesMapper.deleteById(id);
