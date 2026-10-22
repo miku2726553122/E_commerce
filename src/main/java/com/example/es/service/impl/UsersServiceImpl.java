@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.example.es.entity.Users;
 import com.example.es.enums.ResponseCodeEnum;
+import com.example.es.service.CaptchaService;
 import com.example.es.service.UsersService;
 import com.example.es.mapper.UsersMapper;
 import com.example.es.utils.JwtUtils;
@@ -42,6 +43,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private CaptchaService captchaService;
 
 
     /**
@@ -251,6 +255,12 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
     @Override
     public Response login(LoginReqVO loginReqVO) {
         log.info("[登录] 开始, username={}", loginReqVO.getUsername());
+
+        // 0. 校验验证码
+        if (!captchaService.verifyCaptcha(loginReqVO.getCaptchaKey(), loginReqVO.getCaptchaCode())) {
+            log.warn("[登录] 验证码校验失败, username={}", loginReqVO.getUsername());
+            return Response.fail("验证码错误或已过期");
+        }
 
         // 1. 根据用户名查用户
         Users user = usersMapper.findByUsername(loginReqVO.getUsername());
