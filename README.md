@@ -199,7 +199,7 @@ mvn spring-boot:run
 | `cart_items` | 购物车明细表 | - |
 | `orders` | 订单表 | ✅ |
 | `order_items` | 订单明细表 | - |
-| `user_addresses` | 用户地址表 | - |
+| `user_addresses` | 用户地址表 | - | 
 
 ### 用户角色说明
 
