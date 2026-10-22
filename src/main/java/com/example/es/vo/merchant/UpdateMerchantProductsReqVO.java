@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 @Schema(description = "修改商品")
 public class UpdateMerchantProductsReqVO {
     private String productName;
+    @Schema(description = "商品封面URL，空字符串表示移除封面，不传则保留原图")
+    private String mainImage;
     private String description;
     private String detailContent;
     private BigDecimal basePrice;

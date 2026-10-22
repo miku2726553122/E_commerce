@@ -34,10 +34,17 @@ public class UserOrderController {
     @Operation(summary = "查询订单列表",
             description = "GET /user/orders")
     @GetMapping
-    public Response getOrders() {
+    public Response getOrders(@RequestParam(defaultValue = "1") int pageNum,
+                              @RequestParam(defaultValue = "10") int pageSize) {
         return ordersService.getUserOrders(
-                SecurityUtils.getCurrentUserId()
+                SecurityUtils.getCurrentUserId(), pageNum, pageSize
         );
+    }
+
+    @Operation(summary = "模拟付款（仅演示，无真实扣款）")
+    @PutMapping("/{id}/simulate-payment")
+    public Response simulatePayment(@PathVariable Long id) {
+        return ordersService.simulatePayment(SecurityUtils.getCurrentUserId(), id);
     }
 
     @Operation(summary = "查询订单详情",

@@ -413,6 +413,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users>
                 .username(users.getUsername())
                 .nickname(users.getNickname())
                 .phone(users.getPhone())
+                .avatar(users.getAvatar())
                 .build();
 
         return Response.success(vos);

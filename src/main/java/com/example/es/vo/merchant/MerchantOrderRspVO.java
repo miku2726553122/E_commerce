@@ -28,6 +28,10 @@ public class MerchantOrderRspVO {
     @Schema(description = "配送状态")
     private String deliveryStatus;
 
+    private String globalDeliveryStatus;
+    private String paymentStatus;
+    private Boolean canShip;
+
     @Schema(description = "本商家商品总额")
     private BigDecimal merchantAmount;
 

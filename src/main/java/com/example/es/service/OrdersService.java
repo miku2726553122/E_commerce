@@ -41,7 +41,9 @@ public interface OrdersService extends IService<Orders> {
     /**
      * 用户查询订单列表
      */
-    Response getUserOrders(Long userId);
+    Response getUserOrders(Long userId, int pageNum, int pageSize);
+
+    Response simulatePayment(Long userId, Long orderId);
 
     /**
      * 用户查询订单详情

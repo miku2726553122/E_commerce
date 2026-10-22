@@ -30,6 +30,18 @@ public class MerchantOrderDetailRspVO {
     @Schema(description = "配送状态")
     private String deliveryStatus;
 
+    private String globalDeliveryStatus;
+    private String paymentStatus;
+    private Boolean canShip;
+    private String receiverName;
+    private String receiverPhone;
+    private String receiverAddress;
+    private String userRemark;
+    private LocalDateTime paidAt;
+    private LocalDateTime completedAt;
+    private LocalDateTime cancelledAt;
+    private String cancelReason;
+
     @Schema(description = "本商家的订单明细")
     private List<OrderItems> items;
 

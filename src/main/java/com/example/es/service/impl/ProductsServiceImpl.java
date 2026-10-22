@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.example.es.entity.Categories;
 import com.example.es.entity.ProductSkus;
 import com.example.es.entity.Products;
 import com.example.es.enums.ResponseCodeEnum;
@@ -22,7 +23,9 @@ import com.example.es.vo.user.ProductDetailRspVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
 * @author 86159
@@ -167,6 +170,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
         }
 
         if (reqVO.getProductName() == null
+                && reqVO.getMainImage() == null
                 && reqVO.getDescription() == null
                 && reqVO.getDetailContent() == null
                 && reqVO.getBasePrice() == null) {
@@ -204,6 +208,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
             Products update = Products.builder()
                     .id(id)
                     .productName(reqVO.getProductName())
+                    .mainImage(reqVO.getMainImage())
                     .description(reqVO.getDescription())
                     .detailContent(reqVO.getDetailContent())
                     .basePrice(reqVO.getBasePrice())
@@ -363,12 +368,16 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
 
     /**
      * 用户端分页查询商品
+     * 支持父分类自动包含所有子分类的商品
      * @param reqVO
      * @return
      */
     @Override
     public Response findUserProducts(FindUserProductsReqVO reqVO) {
-        Page<Products> page = productsMapper.findUserProducts(reqVO);
+        // 解析分类ID：如果选的是父分类，自动包含所有子分类ID
+        List<Long> categoryIds = resolveCategoryIds(reqVO.getCategoryId());
+
+        Page<Products> page = productsMapper.findUserProducts(reqVO, categoryIds);
 
         FindUserProductsRspVO vos = FindUserProductsRspVO.builder()
                 .records(page.getRecords())
@@ -378,6 +387,31 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
                 .build();
 
         return Response.success(vos);
+    }
+
+    /**
+     * 解析分类ID：如果是父分类，返回其所有子分类ID；如果是子分类，返回自身ID
+     */
+    private List<Long> resolveCategoryIds(Long categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+
+        // 查询所有以该分类为父分类的子分类
+        List<Categories> children = categoriesMapper.selectList(
+                Wrappers.<Categories>lambdaQuery()
+                        .eq(Categories::getParentId, categoryId)
+        );
+
+        if (children.isEmpty()) {
+            // 没有子分类，说明本身就是叶子分类，直接返回自身
+            return List.of(categoryId);
+        }
+
+        // 有子分类，返回所有子分类的ID
+        return children.stream()
+                .map(Categories::getId)
+                .collect(Collectors.toList());
     }
 
     /**

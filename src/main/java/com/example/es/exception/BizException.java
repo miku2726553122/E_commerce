@@ -12,7 +12,14 @@ public class BizException extends RuntimeException {
     // 错误信息
     private String errorMessage;
 
+    public BizException(String message) {
+        super(message);
+        this.errorCode = "ORDER_ERROR";
+        this.errorMessage = message;
+    }
+
     public BizException(BaseExceptionInterface baseExceptionInterface) {
+        super(baseExceptionInterface.getErrorMessage());
         this.errorCode = baseExceptionInterface.getErrorCode();
         this.errorMessage = baseExceptionInterface.getErrorMessage();
     }
@@ -21,6 +28,7 @@ public class BizException extends RuntimeException {
      * 使用枚举创建异常
      */
     public BizException(ResponseCodeEnum responseCodeEnum) {
+        super(responseCodeEnum.getErrorMessage());
         this.errorCode = responseCodeEnum.getErrorCode();
         this.errorMessage = responseCodeEnum.getErrorMessage();
     }

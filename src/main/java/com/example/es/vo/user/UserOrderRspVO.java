@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -36,6 +37,18 @@ public class UserOrderRspVO {
      * 订单状态
      */
     private String orderStatus;
+
+    private String receiverName;
+    private String receiverPhone;
+    private String paymentStatus;
+    private String deliveryStatus;
+    private String cancelReason;
+    private String userRemark;
+    private LocalDateTime createdAt;
+    private LocalDateTime paidAt;
+    private LocalDateTime shippedAt;
+    private LocalDateTime completedAt;
+    private LocalDateTime cancelledAt;
 
     /**
      * 订单明细

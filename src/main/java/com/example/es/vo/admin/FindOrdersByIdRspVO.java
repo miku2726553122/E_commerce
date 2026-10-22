@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,5 +20,18 @@ public class FindOrdersByIdRspVO {
     private Long userId;
     private BigDecimal payableAmount;
     private String orderStatus;
+    private String paymentStatus;
+    private String deliveryStatus;
+    private String receiverName;
+    private String receiverPhone;
+    private String receiverAddress;
+    private String userRemark;
+    private String cancelReason;
+    private String remark;
+    private LocalDateTime createdAt;
+    private LocalDateTime paidAt;
+    private LocalDateTime shippedAt;
+    private LocalDateTime completedAt;
+    private LocalDateTime cancelledAt;
     private List<FindOrdersItemsByIdRspVO> items;
 }

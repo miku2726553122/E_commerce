@@ -2,6 +2,7 @@ package com.example.es.vo.user.order;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -10,5 +11,6 @@ public class CancelOrderReqVO {
 
     @Schema(description = "取消原因", required = true)
     @NotBlank(message = "取消原因不能为空")
+    @Size(max = 255, message = "取消原因不能超过255字")
     private String cancelReason;
 }

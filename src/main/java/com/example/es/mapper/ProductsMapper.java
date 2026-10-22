@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.es.vo.admin.FindAllProductsReqVO;
 import com.example.es.vo.user.FindUserProductsReqVO;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -53,12 +54,13 @@ public interface ProductsMapper extends BaseMapper<Products> {
 
     /**
      * 用户端分页查询商品（已上架且审核通过）
+     * @param categoryIds 分类ID列表（包含父分类及其所有子分类ID）
      */
-    default Page<Products> findUserProducts(FindUserProductsReqVO reqVO){
+    default Page<Products> findUserProducts(FindUserProductsReqVO reqVO, List<Long> categoryIds){
         Page<Products> page = new Page<>(reqVO.getPageNum(), reqVO.getPageSize());
 
         LambdaQueryWrapper<Products> wrapper = Wrappers.<Products>lambdaQuery()
-                .eq(reqVO.getCategoryId() != null, Products::getCategoryId, reqVO.getCategoryId())
+                .in(categoryIds != null && !categoryIds.isEmpty(), Products::getCategoryId, categoryIds)
                 .like(StringUtils.isNotBlank(reqVO.getKeyword()), Products::getProductName, reqVO.getKeyword())
                 .eq(Products::getSaleStatus, 1)
                 .eq(Products::getAuditStatus, 1)

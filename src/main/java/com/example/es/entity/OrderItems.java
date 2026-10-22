@@ -93,6 +93,9 @@ public class OrderItems {
     @TableField("created_at")
     private LocalDateTime createdAt;
 
+    @TableField("shipped_at")
+    private LocalDateTime shippedAt;
+
     @Override
     public boolean equals(Object that) {
         if (this == that) {

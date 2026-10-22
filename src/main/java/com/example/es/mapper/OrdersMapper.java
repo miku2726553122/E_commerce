@@ -1,13 +1,14 @@
 package com.example.es.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.es.entity.Orders;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.es.vo.admin.FindPageByOrdersReqVO;
 import org.springframework.util.StringUtils;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 /**
 * @author 86159
@@ -31,13 +32,8 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     }
 
 
-    default boolean updateOrderStatus(Long id, String orderStatus, String remark){
-        LambdaUpdateWrapper<Orders> wrapper = Wrappers.<Orders>lambdaUpdate()
-                .eq(Orders::getId, id)
-                .set(Orders::getOrderStatus, orderStatus)
-                .set(Orders::getRemark, remark);
-        return update(wrapper) > 0;
-    }
+    @Select("SELECT * FROM orders WHERE id = #{id} FOR UPDATE")
+    Orders selectForUpdate(@Param("id") Long id);
 }
 
 

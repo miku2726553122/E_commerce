@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -72,4 +73,6 @@ public class FindOrdersItemsByIdRspVO {
      * 明细总金额
      */
     private BigDecimal totalAmount;
+
+    private LocalDateTime shippedAt;
 }

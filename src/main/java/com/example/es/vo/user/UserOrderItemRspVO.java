@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -46,4 +47,6 @@ public class UserOrderItemRspVO {
      * 小计金额
      */
     private BigDecimal totalAmount;
+
+    private LocalDateTime shippedAt;
 }
