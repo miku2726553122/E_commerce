@@ -41,6 +41,15 @@ public class Products {
     @TableField("category_id")
     private Long categoryId;
 
+    @TableField(exist = false)
+    private String categoryName;
+
+    @TableField(exist = false)
+    private Integer categoryStatus;
+
+    @TableField(exist = false)
+    private String categoryParentName;
+
     /**
      * 商品名称
      */

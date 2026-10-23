@@ -15,6 +15,10 @@ import java.math.BigDecimal;
 @Schema(description = "发布商品")
 public class CreateMerchantProductReqVO {
     private Long categoryId;
+    @Schema(description = "申请的新分类名称，与 categoryId 二选一")
+    private String newCategoryName;
+    @Schema(description = "新分类的父级分类，0 表示一级分类")
+    private Long categoryParentId;
     private String productName;
     private String productCode;
     private String mainImage;

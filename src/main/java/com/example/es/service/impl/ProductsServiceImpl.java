@@ -9,6 +9,7 @@ import com.example.es.entity.ProductSkus;
 import com.example.es.entity.Products;
 import com.example.es.entity.Users;
 import com.example.es.enums.ResponseCodeEnum;
+import com.example.es.exception.BizException;
 import com.example.es.mapper.ProductSkusMapper;
 import com.example.es.mapper.CategoriesMapper;
 import com.example.es.service.ProductsService;
@@ -24,9 +25,13 @@ import com.example.es.vo.user.FindUserProductsRspVO;
 import com.example.es.vo.user.ProductDetailRspVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -51,24 +56,65 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
      * @return
      */
     @Override
+    @Transactional
     public Response createMerchantProduct(Long merchantId,
                                           CreateMerchantProductReqVO reqVO) {
         if (merchantId==null
                 ||reqVO==null
-                ||reqVO.getCategoryId()==null
                 ||reqVO.getProductName()==null
                 ||reqVO.getProductName().isBlank()
                 ||reqVO.getProductCode()==null
                 ||reqVO.getProductCode().isBlank()
-                ||reqVO.getBasePrice()==null){
+                ||reqVO.getBasePrice()==null
+                ||reqVO.getBasePrice().signum() <= 0){
             return Response.fail(ResponseCodeEnum.PARAM_ERROR);
         }
 
+        boolean newCategory = reqVO.getNewCategoryName() != null
+                && !reqVO.getNewCategoryName().isBlank();
+        if (newCategory == (reqVO.getCategoryId() != null)) {
+            return Response.fail("请选择已有分类或申请新分类");
+        }
+        Categories category;
+        if (newCategory) {
+            String name = reqVO.getNewCategoryName().trim();
+            if (name.length() > 100) {
+                return Response.fail("分类名称不能超过100字");
+            }
+            long parentId = reqVO.getCategoryParentId() == null ? 0L : reqVO.getCategoryParentId();
+            if (parentId != 0) {
+                Categories parent = categoriesMapper.selectByIdForUpdate(parentId);
+                if (parent == null || !Integer.valueOf(1).equals(parent.getStatus())
+                        || !Long.valueOf(0).equals(parent.getParentId())) {
+                    return Response.fail("请选择启用的一级分类作为父级");
+                }
+            }
+            category = categoriesMapper.selectOne(Wrappers.<Categories>lambdaQuery()
+                    .eq(Categories::getParentId, parentId)
+                    .eq(Categories::getCategoryName, name)
+                    .last("FOR UPDATE"));
+            if (category == null) {
+                category = Categories.builder().parentId(parentId).categoryName(name)
+                        .status(2).sortOrder(0).build();
+                if (categoriesMapper.insert(category) != 1) {
+                    throw new BizException("分类申请保存失败，请重试");
+                }
+            } else if (Integer.valueOf(1).equals(category.getStatus())) {
+                return Response.fail("该分类已存在，请选择已有分类");
+            } else if (!Integer.valueOf(2).equals(category.getStatus())) {
+                return Response.fail("同名分类已停用，请联系管理员");
+            }
+        } else {
+            category = categoriesMapper.selectById(reqVO.getCategoryId());
+            if (!isCategoryAvailable(category)) {
+                return Response.fail("所选分类不存在或未启用");
+            }
+        }
         Products product = Products.builder()
                 .merchantId(merchantId)
-                .categoryId(reqVO.getCategoryId())
-                .productName(reqVO.getProductName())
-                .productCode(reqVO.getProductCode())
+                .categoryId(category.getId())
+                .productName(reqVO.getProductName().trim())
+                .productCode(reqVO.getProductCode().trim())
                 .mainImage(reqVO.getMainImage())
                 .description(reqVO.getDescription())
                 .detailContent(reqVO.getDetailContent())
@@ -79,7 +125,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
 
         Boolean save = this.save(product);
         if (!save) {
-            return Response.fail(ResponseCodeEnum.FAIL);
+            throw new BizException("商品提交失败，请重试");
         }
 
         CreateMerchantProductRspVO rspVO = CreateMerchantProductRspVO.builder()
@@ -125,6 +171,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
                         .orderByDesc(Products::getCreatedAt);
 
         productsMapper.selectPage(page, wrapper);
+        populateCategories(page.getRecords());
 
         PageMerchantProductsRspVO rspVO =
                 PageMerchantProductsRspVO.builder()
@@ -217,6 +264,9 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
                     .description(reqVO.getDescription())
                     .detailContent(reqVO.getDetailContent())
                     .basePrice(reqVO.getBasePrice())
+                    .auditStatus(0)
+                    .saleStatus(0)
+                    .auditRemark("")
                     .version(product.getVersion()) // 带上版本号
                     .build();
 
@@ -267,6 +317,7 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
     public Response findAllProducts(FindAllProductsReqVO findAllProductsReqVO) {
 
         Page<Products> page = productsMapper.findAllProducts(findAllProductsReqVO);
+        populateCategories(page.getRecords());
 
         FindAllProductsRspVO vos = FindAllProductsRspVO.builder()
                 .records(page.getRecords())
@@ -286,15 +337,48 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
      * @return
      */
     @Override
+    @Transactional
     public Response reviewProduct(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO) {
-        //商品是否存在
-        if (!productsMapper.existsById(id)) {
+        if (id == null || findAndUpdateReviewProductReqVO == null
+                || (!Integer.valueOf(1).equals(findAndUpdateReviewProductReqVO.getAuditStatus())
+                && !Integer.valueOf(2).equals(findAndUpdateReviewProductReqVO.getAuditStatus()))) {
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        }
+        boolean approved = Integer.valueOf(1).equals(findAndUpdateReviewProductReqVO.getAuditStatus());
+        String remark = findAndUpdateReviewProductReqVO.getAuditRemark() == null
+                ? "" : findAndUpdateReviewProductReqVO.getAuditRemark().trim();
+        if (remark.length() > 255 || (!approved && remark.isBlank())) {
+            return Response.fail("请填写255字以内的审核备注，驳回原因不能为空");
+        }
+        Products product = productsMapper.selectByIdForUpdate(id);
+        if (product == null) {
             return Response.fail("商品不存在");
         }
+        if (!Integer.valueOf(0).equals(product.getAuditStatus())) {
+            return Response.fail("商品已审核，请刷新列表");
+        }
+        if (approved) {
+            Categories category = categoriesMapper.selectByIdForUpdate(product.getCategoryId());
+            if (category == null || (!Integer.valueOf(1).equals(category.getStatus())
+                    && !Integer.valueOf(2).equals(category.getStatus()))
+                    || !isParentAvailable(category)) {
+                return Response.fail("商品分类不存在或已停用");
+            }
+            if (Integer.valueOf(2).equals(category.getStatus())) {
+                if (categoriesMapper.updateById(Categories.builder()
+                        .id(category.getId()).status(1).build()) != 1) {
+                    throw new BizException("分类审核失败，请重试");
+                }
+            }
+        }
 
-        boolean result = productsMapper.reviewProduct(id, findAndUpdateReviewProductReqVO.getAuditStatus(), findAndUpdateReviewProductReqVO.getAuditRemark());
-
-        return result? Response.success():Response.fail("参数错误");
+        int updated = productsMapper.updateById(Products.builder()
+                .id(id).auditStatus(approved ? 1 : 2).saleStatus(approved ? 1 : 0)
+                .auditRemark(remark).version(product.getVersion()).build());
+        if (updated != 1) {
+            throw new BizException("商品审核失败，请刷新后重试");
+        }
+        return Response.success();
     }
 
     /**
@@ -304,14 +388,26 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
      * @return
      */
     @Override
+    @Transactional
     public Response updateProductShelf(Long id, FindAndUpdateReviewProductReqVO findAndUpdateReviewProductReqVO) {
-
-        if (!productsMapper.existsById(id)) {
+        if (id == null || findAndUpdateReviewProductReqVO == null
+                || (!Integer.valueOf(0).equals(findAndUpdateReviewProductReqVO.getSaleStatus())
+                && !Integer.valueOf(1).equals(findAndUpdateReviewProductReqVO.getSaleStatus()))) {
+            return Response.fail(ResponseCodeEnum.PARAM_ERROR);
+        }
+        Products product = productsMapper.selectByIdForUpdate(id);
+        if (product == null) {
             return Response.fail("商品不存在");
         }
-
-        boolean result = productsMapper.updateProductShelf(id, findAndUpdateReviewProductReqVO.getSaleStatus());
-        return result? Response.success():Response.fail("参数错误");
+        if (Integer.valueOf(1).equals(findAndUpdateReviewProductReqVO.getSaleStatus())
+                && (!Integer.valueOf(1).equals(product.getAuditStatus())
+                || !isCategoryAvailable(categoriesMapper.selectById(product.getCategoryId())))) {
+            return Response.fail("商品或分类尚未审核通过，不能上架");
+        }
+        int updated = productsMapper.updateById(Products.builder()
+                .id(id).saleStatus(findAndUpdateReviewProductReqVO.getSaleStatus())
+                .version(product.getVersion()).build());
+        return updated == 1 ? Response.success() : Response.fail("更新失败，请重试");
     }
 
     @Override
@@ -349,6 +445,11 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
             product = productsMapper.selectById(id);
             if (product == null || !merchantId.equals(product.getMerchantId())) {
                 return Response.fail("商品不存在");
+            }
+            if (reqVO.getSaleStatus() == 1
+                    && (!Integer.valueOf(1).equals(product.getAuditStatus())
+                    || !isCategoryAvailable(categoriesMapper.selectById(product.getCategoryId())))) {
+                return Response.fail("商品或分类尚未审核通过，不能上架");
             }
 
             Products update = Products.builder()
@@ -413,10 +514,51 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
             return List.of(categoryId);
         }
 
-        // 有子分类，返回所有子分类的ID
-        return children.stream()
-                .map(Categories::getId)
-                .collect(Collectors.toList());
+        // 保留直接挂在父分类下的商品。
+        List<Long> ids = children.stream().map(Categories::getId)
+                .collect(Collectors.toCollection(ArrayList::new));
+        ids.add(categoryId);
+        return ids;
+    }
+
+    private boolean isParentAvailable(Categories category) {
+        if (Long.valueOf(0).equals(category.getParentId())) return true;
+        Categories parent = categoriesMapper.selectById(category.getParentId());
+        return parent != null && Integer.valueOf(1).equals(parent.getStatus());
+    }
+
+    private boolean isCategoryAvailable(Categories category) {
+        return category != null && Integer.valueOf(1).equals(category.getStatus())
+                && isParentAvailable(category);
+    }
+
+    private void populateCategories(List<Products> products) {
+        Set<Long> ids = products.stream().map(Products::getCategoryId)
+                .filter(java.util.Objects::nonNull).collect(Collectors.toSet());
+        if (ids.isEmpty()) return;
+        Map<Long, Categories> categories = categoriesMapper.selectByIds(ids).stream()
+                .collect(Collectors.toMap(Categories::getId, category -> category));
+        Set<Long> parentIds = new HashSet<>();
+        for (Categories category : categories.values()) {
+            if (category.getParentId() != null && category.getParentId() != 0
+                    && !categories.containsKey(category.getParentId())) {
+                parentIds.add(category.getParentId());
+            }
+        }
+        if (!parentIds.isEmpty()) {
+            for (Categories parent : categoriesMapper.selectByIds(parentIds)) {
+                categories.put(parent.getId(), parent);
+            }
+        }
+        for (Products product : products) {
+            Categories category = categories.get(product.getCategoryId());
+            if (category != null) {
+                product.setCategoryName(category.getCategoryName());
+                product.setCategoryStatus(category.getStatus());
+                Categories parent = categories.get(category.getParentId());
+                product.setCategoryParentName(parent == null ? null : parent.getCategoryName());
+            }
+        }
     }
 
     /**

@@ -8,6 +8,8 @@ import com.example.es.vo.admin.AddCategoryReqVO;
 import com.example.es.vo.admin.AddCategoryRspVO;
 import com.example.es.vo.admin.FindAllCategoriesRspVO;
 import com.example.es.vo.user.FindProductCategoriesRspVO;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -19,8 +21,12 @@ import java.util.List;
 */
 public interface CategoriesMapper extends BaseMapper<Categories> {
 
+    @Select("SELECT * FROM categories WHERE id = #{id} FOR UPDATE")
+    Categories selectByIdForUpdate(@Param("id") Long id);
+
     default List<Categories> selectAllCategories(){
         return selectList(Wrappers.<Categories>lambdaQuery()
+                .ne(Categories::getStatus, 2)
                 .orderByDesc(Categories::getCreatedAt)
                 );
     }

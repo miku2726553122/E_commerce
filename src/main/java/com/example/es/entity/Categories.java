@@ -52,7 +52,7 @@ public class Categories {
     private Integer sortOrder;
 
     /**
-     * 状态：0禁用、1启用
+     * 状态：0禁用、1启用、2待商品审核
      */
     private Integer status;
 

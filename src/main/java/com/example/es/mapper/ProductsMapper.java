@@ -11,6 +11,8 @@ import com.example.es.vo.user.FindUserProductsReqVO;
 
 import java.util.List;
 import java.util.Objects;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 /**
 * @author 86159
@@ -19,6 +21,9 @@ import java.util.Objects;
 * @Entity com.example.es.entity.Products
 */
 public interface ProductsMapper extends BaseMapper<Products> {
+
+    @Select("SELECT * FROM products WHERE id = #{id} FOR UPDATE")
+    Products selectByIdForUpdate(@Param("id") Long id);
 
     default Page<Products> findAllProducts(FindAllProductsReqVO findAllProductsReqVO){
         Page<Products> page = new Page<>(findAllProductsReqVO.getPageNum(), findAllProductsReqVO.getPageSize());
