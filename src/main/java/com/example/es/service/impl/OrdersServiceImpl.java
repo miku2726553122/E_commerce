@@ -44,6 +44,8 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
     private CartsMapper cartsMapper;
     @Autowired
     private CartItemsMapper cartItemsMapper;
+    @Autowired
+    private UsersMapper usersMapper;
 
     private Long currentUserId() {
         Long id = SecurityUtils.getCurrentUserId();
@@ -104,9 +106,15 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
                 .shippedAt(item.getShippedAt()).build();
     }
 
-    private UserOrderRspVO toUserOrderRspVO(Orders order) {
+    private String orderNickname(Long userId) {
+        Users user = userId == null ? null : usersMapper.selectById(userId);
+        return user != null && StringUtils.hasText(user.getNickname()) ? user.getNickname().trim() : null;
+    }
+
+    private UserOrderRspVO toUserOrderRspVO(Orders order, String nickname) {
         return UserOrderRspVO.builder()
                 .id(order.getId()).orderNo(order.getOrderNo())
+                .nickname(nickname)
                 .receiverName(order.getReceiverName()).receiverPhone(order.getReceiverPhone())
                 .receiverAddress(order.getReceiverAddress()).payableAmount(order.getPayableAmount())
                 .orderStatus(order.getOrderStatus()).paymentStatus(order.getPaymentStatus())
@@ -150,6 +158,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
 
         return Response.success(FindOrdersByIdRspVO.builder()
                 .id(order.getId()).orderNo(order.getOrderNo()).userId(order.getUserId())
+                .nickname(orderNickname(order.getUserId()))
                 .payableAmount(order.getPayableAmount()).orderStatus(order.getOrderStatus())
                 .paymentStatus(order.getPaymentStatus()).deliveryStatus(order.getDeliveryStatus())
                 .receiverName(order.getReceiverName()).receiverPhone(order.getReceiverPhone())
@@ -276,14 +285,16 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
         Page<Orders> page = ordersMapper.selectPage(new Page<>(Math.max(1, pageNum), Math.max(1, Math.min(100, pageSize))),
                 Wrappers.<Orders>lambdaQuery().eq(Orders::getUserId, currentUserId)
                         .orderByDesc(Orders::getCreatedAt).orderByDesc(Orders::getId));
+        String nickname = page.getRecords().isEmpty() ? null : orderNickname(currentUserId);
         return Response.success(UserOrderPageRspVO.builder()
-                .records(page.getRecords().stream().map(this::toUserOrderRspVO).toList())
+                .records(page.getRecords().stream().map(order -> toUserOrderRspVO(order, nickname)).toList())
                 .total(page.getTotal()).pageNum((int) page.getCurrent()).pageSize((int) page.getSize()).build());
     }
 
     @Override
     public Response getUserOrderDetail(Long userId, Long orderId) {
-        return Response.success(toUserOrderRspVO(userOrder(orderId, false)));
+        Orders order = userOrder(orderId, false);
+        return Response.success(toUserOrderRspVO(order, orderNickname(order.getUserId())));
     }
 
     @Override
@@ -427,6 +438,7 @@ public class OrdersServiceImpl extends ServiceImpl<OrdersMapper, Orders> impleme
                 .deliveryStatus(merchantDeliveryStatus(order, items)).paymentStatus(order.getPaymentStatus())
                 .globalDeliveryStatus(order.getDeliveryStatus())
                 .canShip(canShip(order, items)).items(items).merchantAmount(merchantAmount(items))
+                .nickname(orderNickname(order.getUserId()))
                 .receiverName(order.getReceiverName()).receiverPhone(order.getReceiverPhone())
                 .receiverAddress(order.getReceiverAddress()).userRemark(order.getUserRemark())
                 .createdAt(order.getCreatedAt()).paidAt(order.getPaidAt()).shippedAt(merchantShippedAt)

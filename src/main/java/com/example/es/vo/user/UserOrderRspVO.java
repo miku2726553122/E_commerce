@@ -38,6 +38,7 @@ public class UserOrderRspVO {
      */
     private String orderStatus;
 
+    private String nickname;
     private String receiverName;
     private String receiverPhone;
     private String paymentStatus;

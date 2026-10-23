@@ -7,11 +7,13 @@ import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.example.es.entity.Categories;
 import com.example.es.entity.ProductSkus;
 import com.example.es.entity.Products;
+import com.example.es.entity.Users;
 import com.example.es.enums.ResponseCodeEnum;
 import com.example.es.mapper.ProductSkusMapper;
 import com.example.es.mapper.CategoriesMapper;
 import com.example.es.service.ProductsService;
 import com.example.es.mapper.ProductsMapper;
+import com.example.es.mapper.UsersMapper;
 import com.example.es.utils.Response;
 import com.example.es.vo.merchant.*;
 import com.example.es.vo.admin.FindAllProductsReqVO;
@@ -38,6 +40,9 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
 
     @Autowired
     private CategoriesMapper categoriesMapper;
+
+    @Autowired
+    private UsersMapper usersMapper;
 
     /**
      * 创建商品
@@ -429,11 +434,19 @@ public class ProductsServiceImpl extends ServiceImpl<ProductsMapper, Products>
 
         // 查询SKU列表
         List<ProductSkus> skus = productSkusMapper.findByProductId(id);
+        Users merchant = product.getMerchantId() == null
+                ? null : usersMapper.selectById(product.getMerchantId());
 
         // 构建响应
         ProductDetailRspVO vos = ProductDetailRspVO.builder()
                 .id(product.getId())
                 .productName(product.getProductName())
+                .productCode(product.getProductCode())
+                .basePrice(product.getBasePrice())
+                .categoryId(product.getCategoryId())
+                .merchantId(product.getMerchantId())
+                .shopName(merchant == null ? null : merchant.getShopName())
+                .shopLogo(merchant == null ? null : merchant.getShopLogo())
                 .description(product.getDescription())
                 .mainImage(product.getMainImage())
                 .skus(skus)

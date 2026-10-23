@@ -33,6 +33,8 @@ public class MerchantOrderDetailRspVO {
     private String globalDeliveryStatus;
     private String paymentStatus;
     private Boolean canShip;
+    @Schema(description = "下单用户昵称")
+    private String nickname;
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;

@@ -6,16 +6,23 @@ import com.example.es.entity.Orders;
 import com.example.es.entity.ProductSkus;
 import com.example.es.entity.Products;
 import com.example.es.entity.UserAddresses;
+import com.example.es.entity.Users;
 import com.example.es.exception.BizException;
 import com.example.es.mapper.*;
 import com.example.es.utils.SecurityUtils;
 import com.example.es.vo.admin.UpdateOrderStatusReqVO;
+import com.example.es.vo.admin.FindOrdersByIdRspVO;
+import com.example.es.vo.merchant.MerchantOrderDetailRspVO;
 import com.example.es.vo.user.CreateOrderRspVO;
+import com.example.es.vo.user.UserOrderRspVO;
 import com.example.es.vo.user.order.CreateOrderReqVO;
 import com.example.es.vo.user.order.CancelOrderReqVO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -38,6 +45,7 @@ class OrdersServiceImplTest {
     private ProductSkusMapper productSkusMapper;
     private UserAddressesMapper userAddressesMapper;
     private CartsMapper cartsMapper;
+    private UsersMapper usersMapper;
     private OrdersServiceImpl service;
     private Orders order;
     private List<OrderItems> items;
@@ -51,6 +59,7 @@ class OrdersServiceImplTest {
         productSkusMapper = mock(ProductSkusMapper.class);
         userAddressesMapper = mock(UserAddressesMapper.class);
         cartsMapper = mock(CartsMapper.class);
+        usersMapper = mock(UsersMapper.class);
         service = new OrdersServiceImpl();
         ReflectionTestUtils.setField(service, "ordersMapper", ordersMapper);
         ReflectionTestUtils.setField(service, "orderItemsMapper", orderItemsMapper);
@@ -59,6 +68,7 @@ class OrdersServiceImplTest {
         ReflectionTestUtils.setField(service, "productSkusMapper", productSkusMapper);
         ReflectionTestUtils.setField(service, "userAddressesMapper", userAddressesMapper);
         ReflectionTestUtils.setField(service, "cartsMapper", cartsMapper);
+        ReflectionTestUtils.setField(service, "usersMapper", usersMapper);
 
         order = Orders.builder().id(101L).userId(12L).orderNo("ORD-101")
                 .orderStatus("待付款").paymentStatus("未支付").deliveryStatus("待发货").version(0)
@@ -209,6 +219,59 @@ class OrdersServiceImplTest {
         assertThrows(BizException.class, () -> service.updateOrderStatus(101L, request));
 
         verify(inventoriesMapper, never()).ship(anyLong(), anyInt());
+    }
+
+    @Test
+    void allOrderDetailsReturnTheBuyersNicknameWithoutChangingTheRecipientSnapshot() {
+        order.setReceiverName("Saved recipient");
+        order.setReceiverPhone("13800000000");
+        when(ordersMapper.selectById(101L)).thenReturn(order);
+        when(usersMapper.selectById(12L)).thenReturn(Users.builder()
+                .id(12L).nickname("  Buyer nickname  ").username("user12").build());
+        when(productsMapper.selectById(301L)).thenReturn(Products.builder().id(301L).merchantId(21L).build());
+        when(productsMapper.selectById(302L)).thenReturn(Products.builder().id(302L).merchantId(22L).build());
+
+        var userDetail = assertInstanceOf(UserOrderRspVO.class, service.getUserOrderDetail(12L, 101L).getData());
+        var adminDetail = assertInstanceOf(FindOrdersByIdRspVO.class, service.findOrdersById(101L).getData());
+        authenticateAs(21L);
+        var merchantDetail = assertInstanceOf(MerchantOrderDetailRspVO.class, service.getMerchantOrderDetail(21L, 101L).getData());
+
+        assertEquals("Buyer nickname", userDetail.getNickname());
+        assertEquals("Buyer nickname", adminDetail.getNickname());
+        assertEquals("Buyer nickname", merchantDetail.getNickname());
+        assertEquals("Saved recipient", userDetail.getReceiverName());
+        assertEquals("Saved recipient", adminDetail.getReceiverName());
+        assertEquals("Saved recipient", merchantDetail.getReceiverName());
+        assertEquals("13800000000", merchantDetail.getReceiverPhone());
+        assertEquals("Saved recipient", order.getReceiverName());
+        verify(usersMapper, times(3)).selectById(12L);
+        verify(usersMapper, never()).selectById(21L);
+        verify(ordersMapper, never()).updateById(any(Orders.class));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = "   ")
+    void blankNicknamesKeepTheSavedRecipientAvailable(String nickname) {
+        order.setReceiverName("Saved recipient");
+        when(ordersMapper.selectById(101L)).thenReturn(order);
+        when(usersMapper.selectById(12L)).thenReturn(Users.builder().id(12L).nickname(nickname).build());
+
+        var detail = assertInstanceOf(UserOrderRspVO.class, service.getUserOrderDetail(12L, 101L).getData());
+
+        assertNull(detail.getNickname());
+        assertEquals("Saved recipient", detail.getReceiverName());
+    }
+
+    @Test
+    void aMissingBuyerDoesNotPreventReadingTheOrder() {
+        order.setReceiverName("Saved recipient");
+        when(ordersMapper.selectById(101L)).thenReturn(order);
+
+        var detail = assertInstanceOf(FindOrdersByIdRspVO.class, service.findOrdersById(101L).getData());
+
+        assertNull(detail.getNickname());
+        assertEquals("Saved recipient", detail.getReceiverName());
     }
 
     private static OrderItems item(Long id, Long productId, Long skuId) {

@@ -22,6 +22,7 @@ public class FindOrdersByIdRspVO {
     private String orderStatus;
     private String paymentStatus;
     private String deliveryStatus;
+    private String nickname;
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;

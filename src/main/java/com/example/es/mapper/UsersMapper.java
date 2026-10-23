@@ -30,7 +30,7 @@ public interface UsersMapper extends BaseMapper<Users> {
                 .eq(StringUtils.isNotBlank(role), Users::getRole, role)           // 精确匹配角色
                 .eq(Objects.nonNull(status), Users::getStatus, status)             // 精确匹配状态
                 .like(StringUtils.isNotBlank(keyword), Users::getRole, keyword)    // 关键词模糊查询
-                .orderByDesc(Users::getCreatedAt);                                // 按创建时间倒序
+                .orderByAsc(Users::getId);                                        // 按ID正序
 
         return selectPage(page, wrapper);
     }
